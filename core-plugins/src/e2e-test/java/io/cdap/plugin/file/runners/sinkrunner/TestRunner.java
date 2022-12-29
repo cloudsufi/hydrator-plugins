@@ -26,7 +26,7 @@ import org.junit.runner.RunWith;
 @CucumberOptions(
   features = {"src/e2e-test/features"},
   glue = {"io.cdap.plugin.file.stepsdesign", "stepsdesign", "io.cdap.plugin.common.stepsdesign"},
-  tags = {"@File_Sink"},
+  tags = {"@Run"},
   monochrome = true,
   plugin = {"pretty", "html:target/cucumber-html-report/file-sink",
     "json:target/cucumber-reports/cucumber-file-sink.json",
