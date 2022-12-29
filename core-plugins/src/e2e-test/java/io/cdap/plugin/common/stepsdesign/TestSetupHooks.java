@@ -97,7 +97,7 @@ public class TestSetupHooks {
     }
   }
 
-  @Before(order = 1, value = "@FILE_SINK_TEST")
+  @Before(order = 1, value = "@FILE_SINK_TESTTTS")
   public static void setFileSinkAbsolutePath() {
     if (firstFileSinkTestFlag) {
       PluginPropertyUtils.addPluginProp("normalizeCsvAllDataTypeOutputFile", Paths.get(TestSetupHooks.class.getResource
@@ -244,4 +244,314 @@ public class TestSetupHooks {
       }
     }
   }
+
+  //HDF changes from here from Surya
+
+  // Hooks for deduplicate
+  @Before(order = 1, value = "@GCS_DEDUPLICATE_TEST")
+  public static void createBucketWithDeduplicateTestFile() throws IOException, URISyntaxException {
+    gcsSourceBucketName1 = createGCSBucketWithFile(PluginPropertyUtils.pluginProp("deduplicateFileCsvFile"));
+    PluginPropertyUtils.addPluginProp("gcsDeduplicateTest", "gs://" + gcsSourceBucketName1 + "/"  +
+      PluginPropertyUtils.pluginProp("deduplicateFileCsvFile"));
+    BeforeActions.scenario.write("GCS source bucket name - " + gcsSourceBucketName1);
+  }
+
+  @After(order = 1, value = "@GCS_DEDUPLICATE_TEST")
+  public static void deleteSourceBucketWithDeduplicateTestFile() {
+    deleteGCSBucket(gcsSourceBucketName1);
+    gcsSourceBucketName1 = StringUtils.EMPTY;
+  }
+
+  // Hooks for distinct
+  @Before(order = 1, value = "@GCS_DISTINCT_TEST1")
+  public static void createBucketWithDistinctTest1File() throws IOException, URISyntaxException {
+    gcsSourceBucketName1 = createGCSBucketWithFile(PluginPropertyUtils.pluginProp("distinctCsvAllDataTypeFile"));
+    PluginPropertyUtils.addPluginProp("gcsDistinctTest1", "gs://" + gcsSourceBucketName1 + "/"  +
+      PluginPropertyUtils.pluginProp("distinctCsvAllDataTypeFile"));
+    BeforeActions.scenario.write("GCS source bucket1 name - " + gcsSourceBucketName1);
+  }
+
+  @After(order = 1, value = "@GCS_DISTINCT_TEST1")
+  public static void deleteSourceBucketWithDistinctTest1File() {
+    deleteGCSBucket(gcsSourceBucketName1);
+    gcsSourceBucketName1 = StringUtils.EMPTY;
+  }
+
+  @Before(order = 1, value = "@GCS_DISTINCT_TEST2")
+  public static void createBucketWithDistinctTest2File() throws IOException, URISyntaxException {
+    gcsSourceBucketName1 = createGCSBucketWithFile(PluginPropertyUtils.pluginProp("distinctFileCsvFile"));
+    PluginPropertyUtils.addPluginProp("gcsDistinctTest2", "gs://" + gcsSourceBucketName1 + "/"  +
+      PluginPropertyUtils.pluginProp("distinctFileCsvFile"));
+    BeforeActions.scenario.write("GCS source bucket1 name - " + gcsSourceBucketName1);
+  }
+
+  @After(order = 1, value = "@GCS_DISTINCT_TEST2")
+  public static void deleteSourceBucketWithDistinctTest2File() {
+    deleteGCSBucket(gcsSourceBucketName1);
+    gcsSourceBucketName1 = StringUtils.EMPTY;
+  }
+
+ // Hooks for error collector
+   @Before(order = 1, value = "@ERROR_COLLECTOR_TEST")
+   public static void createBucketWithErrorCollectorTest1File() throws IOException, URISyntaxException {
+     gcsSourceBucketName1 = createGCSBucketWithFile(PluginPropertyUtils.pluginProp("csvFile"));
+     PluginPropertyUtils.addPluginProp("errorCollector1", "gs://" + gcsSourceBucketName1 + "/"  +
+       PluginPropertyUtils.pluginProp("csvFile"));
+     BeforeActions.scenario.write("GCS source bucket1 name - " + gcsSourceBucketName1);
+   }
+
+    @After(order = 1, value = "@ERROR_COLLECTOR_TEST")
+    public static void deleteSourceBucketWithErrorCollectorTest1File() {
+      deleteGCSBucket(gcsSourceBucketName1);
+      gcsSourceBucketName1 = StringUtils.EMPTY;
+    }
+
+    // Hooks for Group By
+    @Before(order = 1, value = "@GROUP_BY_TEST")
+    public static void createBucketWithGroupByTest1File() throws IOException, URISyntaxException {
+      gcsSourceBucketName1 = createGCSBucketWithFile(PluginPropertyUtils.pluginProp("groupByGcsCsvFile"));
+      PluginPropertyUtils.addPluginProp("groupByTest", "gs://" + gcsSourceBucketName1 + "/"  +
+        PluginPropertyUtils.pluginProp("groupByGcsCsvFile"));
+      BeforeActions.scenario.write("GCS source bucket1 name - " + gcsSourceBucketName1);
+    }
+
+    @After(order = 1, value = "@GROUP_BY_TEST")
+    public static void deleteSourceBucketWithGroupByTest1File() {
+      deleteGCSBucket(gcsSourceBucketName1);
+      gcsSourceBucketName1 = StringUtils.EMPTY;
+    }
+    // Hooks for Joiner
+    @Before(order = 1, value = "@JOINER_TEST2")
+    public static void createBucketWithJoinerTest2File() throws IOException, URISyntaxException {
+      gcsSourceBucketName1 = createGCSBucketWithFile(PluginPropertyUtils.pluginProp(
+        "joinerCsvFileSecondInput"));
+      PluginPropertyUtils.addPluginProp("joinerInputTest2", "gs://" + gcsSourceBucketName1 + "/"  +
+        PluginPropertyUtils.pluginProp("joinerCsvFileSecondInput"));
+      BeforeActions.scenario.write("GCS source bucket1 name - " + gcsSourceBucketName1);
+    }
+
+    @After(order = 1, value = "@JOINER_TEST2")
+    public static void deleteSourceBucketWithJoinerTest2File() {
+      deleteGCSBucket(gcsSourceBucketName1);
+      gcsSourceBucketName1 = StringUtils.EMPTY;
+    }
+
+    @Before(order = 1, value = "@JOINER_TEST1")
+    public static void createBucketWithJoinerTest1File() throws IOException, URISyntaxException {
+      gcsSourceBucketName1 = createGCSBucketWithFile(PluginPropertyUtils.pluginProp(
+        "joinerCsvFileFirstInput"));
+      PluginPropertyUtils.addPluginProp("joinerInputTest1", "gs://" + gcsSourceBucketName1 + "/"  +
+        PluginPropertyUtils.pluginProp("joinerCsvFileFirstInput"));
+      BeforeActions.scenario.write("GCS source bucket1 name - " + gcsSourceBucketName1);
+    }
+
+    @After(order = 1, value = "@JOINER_TEST1")
+    public static void deleteSourceBucketWithJoinerTest1File() {
+      deleteGCSBucket(gcsSourceBucketName1);
+      gcsSourceBucketName1 = StringUtils.EMPTY;
+    }
+
+    @Before(order = 1, value = "@JOINER_TEST3")
+    public static void createBucketWithJoinerTest3File() throws IOException, URISyntaxException {
+      gcsSourceBucketName1 = createGCSBucketWithFile(PluginPropertyUtils.pluginProp(
+        "joinerCsvNullFileFirstInput"));
+      PluginPropertyUtils.addPluginProp("joinerCsvNullFileInputTest1",
+                                        "gs://" + gcsSourceBucketName1 + "/"  +
+        PluginPropertyUtils.pluginProp("joinerCsvNullFileFirstInput"));
+      BeforeActions.scenario.write("GCS source bucket1 name - " + gcsSourceBucketName1);
+    }
+
+    @After(order = 1, value = "@JOINER_TEST3")
+    public static void deleteSourceBucketWithJoinerTest3File() {
+      deleteGCSBucket(gcsSourceBucketName1);
+      gcsSourceBucketName1 = StringUtils.EMPTY;
+    }
+
+    @Before(order = 1, value = "@JOINER_TEST4")
+    public static void createBucketWithJoinerTest4File() throws IOException, URISyntaxException {
+      gcsSourceBucketName2 = createGCSBucketWithFile(PluginPropertyUtils.pluginProp(
+        "joinerCsvNullFileSecondInput"));
+      PluginPropertyUtils.addPluginProp("joinerCsvNullFileInputTest2",
+                                        "gs://" + gcsSourceBucketName2 + "/"  +
+        PluginPropertyUtils.pluginProp("joinerCsvNullFileSecondInput"));
+      BeforeActions.scenario.write("GCS source bucket1 name - " + gcsSourceBucketName2);
+    }
+
+    @After(order = 1, value = "@JOINER_TEST4")
+    public static void deleteSourceBucketWithJoinerTest4File() {
+      deleteGCSBucket(gcsSourceBucketName2);
+      gcsSourceBucketName2 = StringUtils.EMPTY;
+    }
+
+    // Hooks for Normalize
+    @Before(order = 1, value = "@NORMALIZE_TEST1")
+    public static void createBucketWithNormalizeTest1File() throws IOException, URISyntaxException {
+      gcsSourceBucketName1 = createGCSBucketWithFile(PluginPropertyUtils.pluginProp(
+        "normalizeCsvAllDataTypeFile"));
+      PluginPropertyUtils.addPluginProp("normalizeTest1", "gs://" + gcsSourceBucketName1 + "/"  +
+        PluginPropertyUtils.pluginProp("normalizeCsvAllDataTypeFile"));
+      BeforeActions.scenario.write("GCS source bucket1 name - " + gcsSourceBucketName1);
+    }
+
+    @After(order = 1, value = "@NORMALIZE_TEST1")
+    public static void deleteSourceBucketWithNormalizeTest1File() {
+      deleteGCSBucket(gcsSourceBucketName1);
+      gcsSourceBucketName1 = StringUtils.EMPTY;
+    }
+
+    @Before(order = 1, value = "@NORMALIZE_TEST2")
+    public static void createBucketWithNormalizeTest2File() throws IOException, URISyntaxException {
+      gcsSourceBucketName1 = createGCSBucketWithFile(PluginPropertyUtils.pluginProp("normalizeCsvFile"));
+      PluginPropertyUtils.addPluginProp("normalizeTest2", "gs://" + gcsSourceBucketName1 + "/"  +
+        PluginPropertyUtils.pluginProp("normalizeCsvFile"));
+      BeforeActions.scenario.write("GCS source bucket1 name - " + gcsSourceBucketName1);
+    }
+
+    @After(order = 1, value = "@NORMALIZE_TEST2")
+    public static void deleteSourceBucketWithNormalizeTest2File() {
+      deleteGCSBucket(gcsSourceBucketName1);
+      gcsSourceBucketName1 = StringUtils.EMPTY;
+    }
+
+    //Hooks for File Plugin
+    @Before(order = 1, value = "@CSV_TEST")
+    public static void createBucketWithFileCSVTest() throws IOException, URISyntaxException {
+      gcsSourceBucketName1 = createGCSBucketWithFile(PluginPropertyUtils.pluginProp("csvFile"));
+      PluginPropertyUtils.addPluginProp("csvTest", "gs://" + gcsSourceBucketName1 + "/"  +
+        PluginPropertyUtils.pluginProp("csvFile"));
+      BeforeActions.scenario.write("GCS source bucket1 name - " + gcsSourceBucketName1);
+    }
+
+    @After(order = 1, value = "@CSV_TEST")
+    public static void deleteSourceBucketWithFileCSVTest() {
+      deleteGCSBucket(gcsSourceBucketName1);
+      gcsSourceBucketName1 = StringUtils.EMPTY;
+    }
+
+    @Before(order = 1, value = "@CSV_DATATYPE_TEST1")
+    public static void createBucketWithFileCSVDataTypeTest1() throws IOException, URISyntaxException {
+      gcsSourceBucketName1 = createGCSBucketWithFile(PluginPropertyUtils.pluginProp("csvAllDataTypeFile"));
+      PluginPropertyUtils.addPluginProp("csvAllDataTypeTest", "gs://" + gcsSourceBucketName1 + "/"  +
+        PluginPropertyUtils.pluginProp("csvAllDataTypeFile"));
+      BeforeActions.scenario.write("GCS source bucket1 name - " + gcsSourceBucketName1);
+    }
+
+    @After(order = 1, value = "@CSV_DATATYPE_TEST1")
+    public static void deleteSourceBucketWithFileCSVDataTypeTest1() {
+      deleteGCSBucket(gcsSourceBucketName1);
+      gcsSourceBucketName1 = StringUtils.EMPTY;
+    }
+
+    @Before(order = 1, value = "@CSV_NO_HEADER_FILE")
+    public static void createBucketWithCSVNoHeaderFile() throws IOException, URISyntaxException {
+      gcsSourceBucketName1 = createGCSBucketWithFile(PluginPropertyUtils.pluginProp("csvNoHeaderFile"));
+      PluginPropertyUtils.addPluginProp("csvNoHeaderFileTest", "gs://" + gcsSourceBucketName1 + "/"  +
+        PluginPropertyUtils.pluginProp("csvNoHeaderFile"));
+      BeforeActions.scenario.write("GCS source bucket1 name - " + gcsSourceBucketName1);
+    }
+
+    @After(order = 1, value = "@CSV_NO_HEADER_FILE")
+    public static void deleteSourceBucketWithCSVNoHeaderFile() {
+      deleteGCSBucket(gcsSourceBucketName1);
+      gcsSourceBucketName1 = StringUtils.EMPTY;
+    }
+
+    @Before(order = 1, value = "@TSV_FILE")
+    public static void createBucketWithTSVFile() throws IOException, URISyntaxException {
+      gcsSourceBucketName1 = createGCSBucketWithFile(PluginPropertyUtils.pluginProp("tsvFile"));
+      PluginPropertyUtils.addPluginProp("tsvFileTest", "gs://" + gcsSourceBucketName1 + "/"  +
+        PluginPropertyUtils.pluginProp("tsvFile"));
+      BeforeActions.scenario.write("GCS source bucket1 name - " + gcsSourceBucketName1);
+    }
+
+    @After(order = 1, value = "@TSV_FILE")
+    public static void deleteSourceBucketWithTSVFile() {
+      deleteGCSBucket(gcsSourceBucketName1);
+      gcsSourceBucketName1 = StringUtils.EMPTY;
+    }
+
+    @Before(order = 1, value = "@TEXT_FILE")
+    public static void createBucketWithTextFile() throws IOException, URISyntaxException {
+      gcsSourceBucketName1 = createGCSBucketWithFile(PluginPropertyUtils.pluginProp("textFile"));
+      PluginPropertyUtils.addPluginProp("textFileTest", "gs://" + gcsSourceBucketName1 + "/"  +
+        PluginPropertyUtils.pluginProp("textFile"));
+      BeforeActions.scenario.write("GCS source bucket1 name - " + gcsSourceBucketName1);
+    }
+
+    @After(order = 1, value = "@TEXT_FILE")
+    public static void deleteSourceBucketWithTextFile() {
+      deleteGCSBucket(gcsSourceBucketName1);
+      gcsSourceBucketName1 = StringUtils.EMPTY;
+    }
+
+    @Before(order = 1, value = "@PATH_FIELD_FILE")
+    public static void createBucketWithPathFieldFile() throws IOException, URISyntaxException {
+      gcsSourceBucketName1 = createGCSBucketWithFile(PluginPropertyUtils.pluginProp("pathFieldTestFile"));
+      PluginPropertyUtils.addPluginProp("pathFieldFileTest", "gs://" + gcsSourceBucketName1 + "/"  +
+        PluginPropertyUtils.pluginProp("pathFieldTestFile"));
+      BeforeActions.scenario.write("GCS source bucket1 name - " + gcsSourceBucketName1);
+    }
+
+    @After(order = 1, value = "@PATH_FIELD_FILE")
+    public static void deleteSourceBucketWithPathFieldFile() {
+      deleteGCSBucket(gcsSourceBucketName1);
+      gcsSourceBucketName1 = StringUtils.EMPTY;
+    }
+
+    @Before(order = 1, value = "@DELIMITED_FILE")
+    public static void createBucketWithDelimitedFile() throws IOException, URISyntaxException {
+      gcsSourceBucketName1 = createGCSBucketWithFile(PluginPropertyUtils.pluginProp("delimitedFile"));
+      PluginPropertyUtils.addPluginProp("delimitedFileTest", "gs://" + gcsSourceBucketName1 + "/"  +
+        PluginPropertyUtils.pluginProp("delimitedFile"));
+      BeforeActions.scenario.write("GCS source bucket1 name - " + gcsSourceBucketName1);
+    }
+
+    @After(order = 1, value = "@DELIMITED_FILE")
+    public static void deleteSourceBucketWithDelimitedFile() {
+      deleteGCSBucket(gcsSourceBucketName1);
+      gcsSourceBucketName1 = StringUtils.EMPTY;
+    }
+
+    @Before(order = 1, value = "@QUOTED_VALUE_CSV")
+    public static void createBucketWithQuotedValueCsvFile() throws IOException, URISyntaxException {
+      gcsSourceBucketName1 = createGCSBucketWithFile(PluginPropertyUtils.pluginProp("quotedValueCSVFile"));
+      PluginPropertyUtils.addPluginProp("quotedValueCSVTestFile", "gs://" + gcsSourceBucketName1 + "/"  +
+        PluginPropertyUtils.pluginProp("quotedValueCSVFile"));
+      BeforeActions.scenario.write("GCS source bucket1 name - " + gcsSourceBucketName1);
+    }
+
+    @After(order = 1, value = "@QUOTED_VALUE_CSV")
+    public static void deleteSourceBucketWithQuotedValueCsvFile() {
+      deleteGCSBucket(gcsSourceBucketName1);
+      gcsSourceBucketName1 = StringUtils.EMPTY;
+    }
+
+    @Before(order = 1, value = "@QUOTED_VALUE_TSV")
+    public static void createBucketWithQuotedValueTsvFile() throws IOException, URISyntaxException {
+      gcsSourceBucketName1 = createGCSBucketWithFile(PluginPropertyUtils.pluginProp("quotedValueTSVFile"));
+      PluginPropertyUtils.addPluginProp("quotedValueTSVTestFile", "gs://" + gcsSourceBucketName1 + "/"  +
+        PluginPropertyUtils.pluginProp("quotedValueTSVFile"));
+      BeforeActions.scenario.write("GCS source bucket1 name - " + gcsSourceBucketName1);
+    }
+
+    @After(order = 1, value = "@QUOTED_VALUE_TSV")
+    public static void deleteSourceBucketWithQuotedValueTsvFile() {
+      deleteGCSBucket(gcsSourceBucketName1);
+      gcsSourceBucketName1 = StringUtils.EMPTY;
+    }
+
+    @Before(order = 1, value = "@QUOTED_VALUE_TXT")
+    public static void createBucketWithQuotedValueTxtFile() throws IOException, URISyntaxException {
+      gcsSourceBucketName1 = createGCSBucketWithFile(PluginPropertyUtils.pluginProp("quotedValueDelimitedFile"));
+      PluginPropertyUtils.addPluginProp("quotedValueDelimitedTestFile", "gs://" + gcsSourceBucketName1 + "/"  +
+        PluginPropertyUtils.pluginProp("quotedValueDelimitedFile"));
+      BeforeActions.scenario.write("GCS source bucket1 name - " + gcsSourceBucketName1);
+    }
+
+    @After(order = 1, value = "@QUOTED_VALUE_TXT")
+    public static void deleteSourceBucketWithQuotedValueTxtFile() {
+      deleteGCSBucket(gcsSourceBucketName1);
+      gcsSourceBucketName1 = StringUtils.EMPTY;
+    }
+
 }
