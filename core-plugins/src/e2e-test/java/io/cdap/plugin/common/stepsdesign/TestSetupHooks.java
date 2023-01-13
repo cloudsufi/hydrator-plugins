@@ -173,11 +173,6 @@ public class TestSetupHooks {
              + (new SimpleDateFormat("yyyyMMdd-HH-mm-ssSSS").format(new Date()))).toAbsolutePath().toString());
   }
 
-  @After(order = 1, value = "@FILE_SINK_TEST")
-  public static void deleteFileSinkOutputFolder() throws IOException {
-    FileUtils.deleteDirectory(new File(PluginPropertyUtils.pluginProp("filePluginOutputFolder")));
-  }
-
   @Before(order = 1, value = "@GCS_SOURCE_TEST")
   public static void createBucketWithCSVFile() throws IOException, URISyntaxException {
     gcsSourceBucketName1 = createGCSBucketWithFile(PluginPropertyUtils.pluginProp("firstNameCsvFile"));
@@ -554,4 +549,17 @@ public class TestSetupHooks {
       gcsSourceBucketName1 = StringUtils.EMPTY;
     }
 
+  // Hooks for File Sink to Create files in GCS Bucket
+  @Before(order = 1, value = "@FILE_SINK_TEST")
+  public static void setTempTargetFileSinkBucketName() throws IOException {
+    gcsTargetBucketName = createGCSBucket();
+    PluginPropertyUtils.addPluginProp("fileSinkTargetBucket", "gs://" + gcsTargetBucketName);
+    BeforeActions.scenario.write("File Sink target bucket name - " + gcsTargetBucketName);
+  }
+
+  @After(order = 1, value = "@FILE_SINK_TEST")
+  public static void deleteTargetFileSinkBucketWithFile() {
+    deleteGCSBucket(gcsTargetBucketName);
+    gcsTargetBucketName = StringUtils.EMPTY;
+  }
 }
