@@ -16,13 +16,9 @@
 
 package io.cdap.plugin.format.delimited.input;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Splitter;
-import com.google.common.collect.AbstractIterator;
 import io.cdap.cdap.api.data.format.StructuredRecord;
 import io.cdap.cdap.api.data.schema.Schema;
-import io.cdap.cdap.format.StructuredRecordStringConverter;
-import io.cdap.plugin.common.SchemaValidator;
 import io.cdap.plugin.format.delimited.common.DelimitedStructuredRecordStringConverter;
 import io.cdap.plugin.format.input.PathTrackingInputFormat;
 import org.apache.hadoop.io.LongWritable;
@@ -32,6 +28,7 @@ import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hadoop.mapreduce.lib.input.FileSplit;
+
 import java.io.IOException;
 import java.util.Iterator;
 import javax.annotation.Nullable;
@@ -43,20 +40,24 @@ public class PathTrackingDelimitedInputFormat extends PathTrackingInputFormat {
   static final String DELIMITER = "delimiter";
   static final String ENABLE_QUOTES_VALUE = "enable_quotes_value";
   static final String SKIP_HEADER = "skip_header";
-
+  static final String ENABLE_MULTILINE_SUPPORT = "enable_multiline_support";
   private static final String QUOTE = "\"";
+  private static final char QUOTE_CHAR = '\"';
+  private static final String NEW_LINE = "\n";
+
 
   @Override
   protected RecordReader<NullWritable, StructuredRecord.Builder> createRecordReader(FileSplit split,
-    TaskAttemptContext context,
-    @Nullable String pathField,
-    @Nullable Schema schema) {
+                                                                                    TaskAttemptContext context,
+                                                                                    @Nullable String pathField,
+                                                                                    @Nullable Schema schema) {
 
     RecordReader<LongWritable, Text> delegate = getDefaultRecordReaderDelegate(split, context);
     String delimiter = context.getConfiguration().get(DELIMITER);
     boolean skipHeader = context.getConfiguration().getBoolean(SKIP_HEADER, false);
     boolean enableQuotesValue = context.getConfiguration().getBoolean(ENABLE_QUOTES_VALUE, false);
-
+    boolean enableMultilineSupport = context.getConfiguration().getBoolean(ENABLE_MULTILINE_SUPPORT, false);
+    final boolean[] isWithinQuotes = {false};
     return new RecordReader<NullWritable, StructuredRecord.Builder>() {
 
       @Override
@@ -85,15 +86,27 @@ public class PathTrackingDelimitedInputFormat extends PathTrackingInputFormat {
       public StructuredRecord.Builder getCurrentValue() throws IOException, InterruptedException {
         String delimitedString = delegate.getCurrentValue().toString();
 
+        if (enableQuotesValue && enableMultilineSupport && isWithinQuotes(delimitedString)) {
+          StringBuilder multiLineRecord = new StringBuilder(delimitedString);
+          while (delegate.nextKeyValue()) {
+            delimitedString = delegate.getCurrentValue().toString();
+            multiLineRecord.append(NEW_LINE).append(delimitedString);
+            if (!isWithinQuotes(delimitedString)) {
+              delimitedString = multiLineRecord.toString();
+              break;
+            }
+          }
+        }
+
         StructuredRecord.Builder builder = StructuredRecord.builder(schema);
         Iterator<Schema.Field> fields = schema.getFields().iterator();
-        Iterator<String> splitsIterator = getSplitsIterator(enableQuotesValue, delimitedString, delimiter);
+        Iterator<String> splitsIterator = getSplitsIterator(delimitedString, delimiter);
 
         while (splitsIterator.hasNext()) {
           String part = splitsIterator.next();
           if (!fields.hasNext()) {
             int numDataFields = 0;
-            splitsIterator = getSplitsIterator(enableQuotesValue, delimitedString, delimiter);
+            splitsIterator = getSplitsIterator(delimitedString, delimiter);
             while (splitsIterator.hasNext()) {
               splitsIterator.next();
               numDataFields++;
@@ -126,7 +139,7 @@ public class PathTrackingDelimitedInputFormat extends PathTrackingInputFormat {
         return builder;
       }
 
-      private Iterator<String> getSplitsIterator(boolean enableQuotesValue, String delimitedString, String delimiter) {
+      private Iterator<String> getSplitsIterator(String delimitedString, String delimiter) {
         if (enableQuotesValue) {
           return new SplitQuotesIterator(delimitedString, delimiter);
         } else {
@@ -142,6 +155,15 @@ public class PathTrackingDelimitedInputFormat extends PathTrackingInputFormat {
       @Override
       public void close() throws IOException {
         delegate.close();
+      }
+
+      private boolean isWithinQuotes(String line) {
+        for (char c : line.toCharArray()) {
+          if (c == QUOTE_CHAR) {
+            isWithinQuotes[0] = !isWithinQuotes[0];
+          }
+        }
+        return isWithinQuotes[0];
       }
     };
   }
