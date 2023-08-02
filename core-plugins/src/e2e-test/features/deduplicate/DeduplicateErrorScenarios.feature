@@ -1,7 +1,7 @@
 @Deduplicate
 Feature:Deduplicate - Verify Deduplicate Plugin Error scenarios
 
-  @GCS_DEDUPLICATE_TEST
+  @GCS_DEDUPLICATE_TEST @Deduplicate_Required
   Scenario:Verify Deduplicate plugin validation errors for invalid value of number of partitions
     Given Open Datafusion Project to configure pipeline
     When Select plugin: "File" from the plugins list as: "Source"
