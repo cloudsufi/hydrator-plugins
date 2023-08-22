@@ -40,6 +40,10 @@ public class JoinerActions {
     ElementHelper.selectCheckbox(JoinerLocators.fieldAliasCheckBox(plugin, field));
   }
 
+  public static void selectRequiredInputCheckbox(int value,String inputSchemaName){
+    ElementHelper.selectCheckbox(JoinerLocators.requiredInputCheckbox(value-1,inputSchemaName));
+  }
+
   public static void selectJoinerType(String targetJoinerType) {
     ElementHelper.selectDropdownOption(JoinerLocators.joinerTypeSelectDropdown,
                                        CdfPluginPropertiesLocators.locateDropdownListItem(targetJoinerType));

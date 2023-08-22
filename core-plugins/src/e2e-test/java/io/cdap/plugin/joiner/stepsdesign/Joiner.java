@@ -36,6 +36,11 @@ public class Joiner implements CdfHelper {
     JoinerActions.uncheckPluginFieldAliasCheckBox(plugin, field);
   }
 
+  @Then("Click on the required input checkbox for schema {int} named {string}")
+  public void clickRequiredInput(int value,String inputSchemaName){
+    JoinerActions.selectRequiredInputCheckbox(value,inputSchemaName);
+  }
+
   @Then("Enter numPartitions {string}")
   public void openJoinerProperties(String partitions) {
     JoinerActions.enterNumPartitions(PluginPropertyUtils.pluginProp(partitions));
