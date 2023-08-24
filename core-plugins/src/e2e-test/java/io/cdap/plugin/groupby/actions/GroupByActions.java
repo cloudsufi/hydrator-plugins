@@ -57,6 +57,9 @@ public class GroupByActions {
       ElementHelper.sendKeys(GroupByLocators.field(index), entry.getKey().split("#")[0]);
       ElementHelper.selectDropdownOption(GroupByLocators.fieldFunction(index), CdfPluginPropertiesLocators.
         locateDropdownListItem(entry.getKey().split("#")[1]));
+      if (entry.getKey().split("#")[1].contains("If")) {
+        ElementHelper.sendKeys(GroupByLocators.fieldFunctionCondition(index), entry.getKey().split("#")[2]);
+      }
       ElementHelper.sendKeys(GroupByLocators.fieldFunctionAlias(index), entry.getValue());
       ElementHelper.clickOnElement(GroupByLocators.fieldAddRowButton(index));
       index++;
