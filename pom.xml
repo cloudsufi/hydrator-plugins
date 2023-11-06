@@ -16,11 +16,11 @@
   -->
 <project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-<modelVersion>4.0.0</modelVersion>
+  <modelVersion>4.0.0</modelVersion>
 
   <groupId>io.cdap.plugin</groupId>
   <artifactId>hydrator-plugins</artifactId>
-  <version>2.12.3</version>
+  <version>2.12.4-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>Hydrator Plugin Collection</name>
   <description>A collection of plugins for CDAP</description>
@@ -39,6 +39,7 @@
     <module>format-orc</module>
     <module>format-parquet</module>
     <module>format-text</module>
+    <module>format-xls</module>
     <module>hbase-plugins</module>
     <module>http-plugins</module>
     <module>mongodb-plugins</module>
@@ -914,7 +915,9 @@
         <artifactId>maven-surefire-plugin</artifactId>
         <version>2.14.1</version>
         <configuration>
-          <argLine>-Xmx3g -Djava.awt.headless=true -XX:MaxPermSize=256m -XX:+UseConcMarkSweepGC -Djava.net.preferIPv4Stack=true</argLine>
+          <argLine>-Xmx3g -Djava.awt.headless=true -XX:MaxPermSize=256m -XX:+UseConcMarkSweepGC
+            -Djava.net.preferIPv4Stack=true
+          </argLine>
           <redirectTestOutputToFile>${surefire.redirectTestOutputToFile}</redirectTestOutputToFile>
           <reuseForks>false</reuseForks>
           <reportFormat>plain</reportFormat>
@@ -1038,7 +1041,9 @@
       <activation>
         <jdk>[1.8,)</jdk>
         <!-- Active by default unless it's a cloud build -->
-        <property><name>!cloudBuild</name></property>
+        <property>
+          <name>!cloudBuild</name>
+        </property>
       </activation>
       <modules>
         <module>wrangler-transform</module>
@@ -1049,19 +1054,19 @@
         <module>azure</module>
       </modules>
     </profile>
-    <profile> 
+    <profile>
       <id>skipTests</id>
       <build>
-       <plugins>
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-surefire-plugin</artifactId>
-          <version>2.14.1</version>
-          <configuration>
-            <skipTests>true</skipTests>
-          </configuration>
-        </plugin>
-       </plugins>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <version>2.14.1</version>
+            <configuration>
+              <skipTests>true</skipTests>
+            </configuration>
+          </plugin>
+        </plugins>
       </build>
     </profile>
     <profile>
@@ -1146,7 +1151,9 @@
     <profile>
       <id>cloudBuild</id>
       <activation>
-        <property><name>cloudBuild</name></property>
+        <property>
+          <name>cloudBuild</name>
+        </property>
       </activation>
       <build>
         <plugins>
