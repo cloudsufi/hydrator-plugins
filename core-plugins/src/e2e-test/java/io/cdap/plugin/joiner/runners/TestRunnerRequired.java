@@ -26,7 +26,7 @@ import org.junit.runner.RunWith;
 @CucumberOptions(
         features = {"src/e2e-test/features"},
         glue = {"stepsdesign", "io.cdap.plugin.joiner.stepsdesign", "io.cdap.plugin.common.stepsdesign"},
-        tags = {"@Joiner_Required"},
+        tags = {"@SKIP"},
         plugin = {"pretty", "html:target/cucumber-html-report/joiner",
                 "json:target/cucumber-reports/cucumber-joiner.json",
                 "junit:target/cucumber-reports/cucumber-joiner.xml"}

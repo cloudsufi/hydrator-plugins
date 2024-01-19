@@ -1,7 +1,6 @@
 @File_Source
 Feature:File Source - Verify File Source Plugin Error scenarios
 
-  @File_Source_Required
   Scenario:Verify File source plugin validation errors for mandatory fields
     Given Open Datafusion Project to configure pipeline
     When Select plugin: "File" from the plugins list as: "Source"

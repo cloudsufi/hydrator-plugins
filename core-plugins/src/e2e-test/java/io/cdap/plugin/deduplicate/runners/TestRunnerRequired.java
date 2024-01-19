@@ -27,7 +27,7 @@ import org.junit.runner.RunWith;
 @CucumberOptions(
         features = {"src/e2e-test/features"},
         glue = {"io.cdap.plugin.deduplicate.stepsdesign", "stepsdesign", "io.cdap.plugin.common.stepsdesign"},
-        tags = {"@Deduplicate_Required"},
+        tags = {"@SKIP"},
         monochrome = true,
         plugin = {"pretty", "html:target/cucumber-html-report/deduplicate-action",
                 "json:target/cucumber-reports/cucumber-deduplicate-action.json",

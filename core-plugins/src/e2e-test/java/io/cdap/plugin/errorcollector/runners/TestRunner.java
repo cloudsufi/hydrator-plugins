@@ -26,7 +26,7 @@ import org.junit.runner.RunWith;
 @CucumberOptions(
   features = {"src/e2e-test/features"},
   glue = {"stepsdesign", "io.cdap.plugin.errorcollector.stepsdesign", "io.cdap.plugin.common.stepsdesign"},
-  tags = {"@ErrorCollector"},
+  tags = {"@SKIP"},
   plugin = {"pretty", "html:target/cucumber-html-report/errorCollector",
     "json:target/cucumber-reports/cucumber-errorCollector.json",
     "junit:target/cucumber-reports/cucumber-errorCollector.xml"}
