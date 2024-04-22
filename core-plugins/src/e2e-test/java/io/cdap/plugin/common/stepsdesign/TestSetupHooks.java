@@ -285,7 +285,7 @@ public class TestSetupHooks {
     BeforeActions.scenario.write("CSV Datatype test bucket name - " + fileSourceBucket1);
   }
 
-  @After(order = 1, value = "@CSV_DATATYPE_TEST1")
+  @After(order = 1, value = "@CSV_DATATYPE_TEST1 or @EXCEL_TEST")
   public static void deleteSourceBucketWithFileCSVDataTypeTest1() {
     deleteGCSBucket(fileSourceBucket1);
     fileSourceBucket1 = StringUtils.EMPTY;
@@ -485,5 +485,13 @@ public class TestSetupHooks {
     BeforeActions.scenario.write("Created GCS Bucket " + bucketName + " containing "
                                    + files.size() + " files in " + folderPath);
     return bucketName;
+  }
+
+  @Before(order = 1, value = "@EXCEL_TEST")
+  public static void createBucketWithExcelFile() throws IOException, URISyntaxException {
+    fileSourceBucket1 = createGCSBucketWithFile(PluginPropertyUtils.pluginProp("excelFile"));
+    PluginPropertyUtils.addPluginProp("excelTestFile", "gs://" + fileSourceBucket1 + "/"  +
+      PluginPropertyUtils.pluginProp("excelFile"));
+    BeforeActions.scenario.write("excel test bucket name - " + fileSourceBucket1);
   }
 }
