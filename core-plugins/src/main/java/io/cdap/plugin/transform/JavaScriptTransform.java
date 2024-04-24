@@ -53,6 +53,8 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -270,6 +272,21 @@ public class JavaScriptTransform extends Transform<StructuredRecord, StructuredR
 
   private Object decode(Object object, Schema schema) {
     Schema.Type type = schema.getType();
+
+    Schema.LogicalType logicalType = schema.getLogicalType();
+    if (logicalType != null) {
+      switch (logicalType) {
+        case DECIMAL:
+          BigDecimal bigDecimal = null;
+          if (object instanceof Number) {
+            double doubleValue = ((Number) object).doubleValue();
+            bigDecimal = BigDecimal.valueOf(doubleValue).setScale(schema.getScale(), RoundingMode.HALF_EVEN);
+          }
+          if (bigDecimal != null) {
+            return bigDecimal.unscaledValue().toByteArray();
+          }
+      }
+    }
 
     switch (type) {
       case NULL:
