@@ -16,13 +16,17 @@
 package io.cdap.plugin.common.stepsdesign;
 
 import com.google.cloud.storage.Blob;
+import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageException;
+import com.google.cloud.storage.StorageOptions;
 import io.cdap.e2e.utils.CdfHelper;
 import io.cdap.e2e.utils.PluginPropertyUtils;
 import io.cdap.e2e.utils.StorageClient;
 import io.cucumber.java.en.Then;
 import org.apache.directory.api.util.Strings;
 import org.junit.Assert;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import stepsdesign.BeforeActions;
 
 import java.io.BufferedReader;
@@ -41,6 +45,7 @@ import java.util.Objects;
  *  Core Plugin Common Step Design.
  */
 public class CorePlugin implements CdfHelper {
+  private static final Logger LOG = LoggerFactory.getLogger(CorePlugin.class);
   @Then("Verify the CSV Output File matches the Expected Output File: {string} With Expected Partitions: {string}")
   public void verifyCSVOutput(String file, String expectedPartitions) {
     String gcsTargetBucket =  PluginPropertyUtils.pluginProp("gcsTargetBucket");
@@ -125,5 +130,50 @@ public class CorePlugin implements CdfHelper {
       ValidationHelper.listBucketObjects(outputFileSinkBucketName.substring(5),
         PluginPropertyUtils.pluginProp(expectedOutputFilePath));
     }
+  }
+
+  @Then("Validate that file gets successfully deleted from the gcs bucket")
+  public static boolean validateThatFileGetsDeletedFromTheGcsBucket() {
+    String bucketName = TestSetupHooks.fileSourceBucket;
+    String fileName = PluginPropertyUtils.pluginProp("xmlFileName");
+      // Instantiate a client for Google Cloud Storage
+    Storage storage = StorageOptions.newBuilder().setProjectId(PluginPropertyUtils.pluginProp("projectId"))
+      .build().getService();
+      // Check if the file exists in the bucket
+      Blob blob = storage.get(bucketName, fileName);
+      // If blob is null, the file does not exist
+    boolean isDeleted = (blob == null);
+    if (isDeleted) {
+      LOG.info("The file " + fileName + " has been successfully deleted from the bucket " + bucketName + ".");
+    } else {
+      LOG.info("The file " + fileName + " still exists in the bucket " + bucketName + ".");
+    }
+    return isDeleted;
+  }
+
+  @Then("Validate that file gets successfully moved to the target location")
+  public static boolean verifyFileMovedWithinGCSBucket() {
+    // Instantiate a client for Google Cloud Storage with the specified project ID
+    Storage storage = StorageOptions.newBuilder().setProjectId(PluginPropertyUtils.pluginProp("projectId"))
+      .build().getService();
+    String bucketName = TestSetupHooks.fileSourceBucket;
+    String fileName = PluginPropertyUtils.pluginProp("xmlFileName");
+    String targetLocation = PluginPropertyUtils.pluginProp("bucketName");
+    // Check if the source file exists
+    Blob sourceBlob = storage.get(bucketName, fileName);
+
+    // Check if the target file exists
+    Blob targetBlob = storage.get(targetLocation, fileName);
+
+    // Verify the file has been moved by checking if the source file does not exist and the target file exists
+    boolean isMoved = sourceBlob == null && targetBlob != null;
+    if (isMoved) {
+      LOG.info("The file " + fileName + " was successfully moved to target location in the bucket ");
+    } else if (sourceBlob != null) {
+      LOG.info("The source file " + fileName + " still exists in the bucket " + bucketName + ".");
+    } else {
+      LOG.info("The target file " + fileName + " does not exist in the bucket " + bucketName + ".");
+    }
+    return isMoved;
   }
 }
