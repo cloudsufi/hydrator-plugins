@@ -45,6 +45,7 @@ public class TestSetupHooks {
   public static String gcsSourceBucketName1 = StringUtils.EMPTY;
   public static String gcsSourceBucketName2 = StringUtils.EMPTY;
   public static String gcsTargetBucketName = StringUtils.EMPTY;
+  public static String fileSourceBucket = StringUtils.EMPTY;
   public static String fileSourceBucket1 = StringUtils.EMPTY;
   public static String fileSourceBucket2 = StringUtils.EMPTY;
   public static String fileSourceBucket3 = StringUtils.EMPTY;
@@ -291,6 +292,12 @@ public class TestSetupHooks {
     fileSourceBucket1 = StringUtils.EMPTY;
   }
 
+  @After(order = 1, value = "@XMLREADER_TEST or @XMLREADER_DELETE_TEST")
+  public static void deleteSourceBucketWithXmlFile() {
+    deleteGCSBucket(fileSourceBucket);
+    fileSourceBucket = StringUtils.EMPTY;
+  }
+
   @Before(order = 1, value = "@CSV_NO_HEADER_FILE")
   public static void createBucketWithCSVNoHeaderFile() throws IOException, URISyntaxException {
     fileSourceBucket2 = createGCSBucketWithFile(PluginPropertyUtils.pluginProp("csvNoHeaderFile"));
@@ -455,6 +462,12 @@ public class TestSetupHooks {
     return bucketName;
   }
 
+  private static String createGCSBucketWithXmlFile(String filePath) throws IOException, URISyntaxException {
+    String bucketName = StorageClient.createBucket("e2e-test-xml").getName();
+    StorageClient.uploadObject(bucketName, filePath, filePath);
+    return bucketName;
+  }
+
   private static void deleteGCSBucket(String bucketName) {
     try {
       for (Blob blob : StorageClient.listObjects(bucketName).iterateAll()) {
@@ -493,5 +506,21 @@ public class TestSetupHooks {
     PluginPropertyUtils.addPluginProp("excelTestFile", "gs://" + fileSourceBucket1 + "/"  +
       PluginPropertyUtils.pluginProp("excelFile"));
     BeforeActions.scenario.write("excel test bucket name - " + fileSourceBucket1);
+  }
+
+  @Before(order = 1, value = "@XMLREADER_TEST")
+  public static void createBucketWithXmlFile() throws IOException, URISyntaxException {
+    fileSourceBucket = createGCSBucketWithXmlFile(PluginPropertyUtils.pluginProp("xmlFile"));
+    PluginPropertyUtils.addPluginProp("xmlTestFile", "gs://" + fileSourceBucket + "/"  +
+      PluginPropertyUtils.pluginProp("xmlFile"));
+    BeforeActions.scenario.write("xml test bucket name - " + fileSourceBucket);
+  }
+
+  @Before(order = 1, value = "@XMLREADER_DELETE_TEST")
+  public static void createBucketWithXmlFileForTestPattern() throws IOException, URISyntaxException {
+    fileSourceBucket = createGCSBucketWithXmlFile(PluginPropertyUtils.pluginProp("xmlFile"));
+    PluginPropertyUtils.addPluginProp("xmlTestFile", "gs://" + fileSourceBucket + "/testdata/xmldata/"
+      + "*");
+    BeforeActions.scenario.write("xml test bucket name - " + fileSourceBucket);
   }
 }

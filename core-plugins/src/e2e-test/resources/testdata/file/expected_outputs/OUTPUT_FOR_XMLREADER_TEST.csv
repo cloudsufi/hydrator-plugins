@@ -1,0 +1,15 @@
+3,gs://e2e-test-xml/testdata/xmldata/testxmlfile.xml,<student>
+        <id>1</id>
+        <name>John Doe</name>
+        <address>123 Main Street, Cityville</address>
+    </student>
+8,gs://e2e-test-xml/testdata/xmldata/testxmlfile.xml,<student>
+        <id>2</id>
+        <name>Jane Smith</name>
+        <address>456 Elm Street, Townsville</address>
+    </student>
+13,gs://e2e-test-xml/testdata/xmldata/testxmlfile.xml,<student>
+        <id>3</id>
+        <name>Alice Johnson</name>
+        <address>789 Oak Street, Villageton</address>
+    </student>
