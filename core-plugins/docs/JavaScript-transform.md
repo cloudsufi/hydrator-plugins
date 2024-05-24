@@ -63,6 +63,9 @@ or else scale the ``count`` field by 1024.
 **schema:** The schema of output objects. If no schema is given, it is assumed that the output
 schema is the same as the input schema.
 
+> for `Decimal` type the value is rounded using the `RoundingMode.HALF_EVEN` method if it does not fit within 
+the schema. This ensures that the value adheres to the precision and scale defined in the schema.
+
 **lookup:** The configuration of the lookup tables to be used in your script.
 For example, if lookup table "purchases" is configured, then you will be able to perform
 operations with that lookup table in your script: ``context.getLookup('purchases').lookup('key')``
