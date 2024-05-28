@@ -34,6 +34,7 @@ import io.cdap.cdap.etl.mock.transform.MockTransformContext;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.math.BigDecimal;
 import java.nio.ByteBuffer;
 import java.util.Collections;
 import java.util.HashMap;
@@ -403,5 +404,35 @@ public class JavaScriptTransformTest {
     Assert.assertTrue(Math.abs(2.71 * 2.71 + 3.14 * 3.14 * 3.14 - (Double) output.get("x")) < 0.000001);
     Assert.assertEquals(1, mockContext.getMockMetrics().getCount("script.transform.count"));
     Assert.assertEquals(1, mockContext.getMockMetrics().getPipelineCount("transform.1.script.transform.count"));
+  }
+
+  @Test
+  public void testDecimalTransform() throws Exception {
+    Schema outputSchema = Schema.recordOf("test",
+      Schema.Field.of("pie", Schema.decimalOf(3, 2)),
+      Schema.Field.of("int_pie", Schema.decimalOf(1, 0)),
+      Schema.Field.of("long_pie", Schema.decimalOf(10, 0))
+    );
+    Schema inputSchema = Schema.recordOf("test",
+      Schema.Field.of("pie", Schema.decimalOf(3, 2)),
+      Schema.Field.of("int_pie", Schema.decimalOf(1, 0)),
+      Schema.Field.of("long_pie", Schema.decimalOf(10, 0))
+    );
+    StructuredRecord input = StructuredRecord.builder(inputSchema)
+      .setDecimal("pie", new BigDecimal("3.14"))
+      .setDecimal("int_pie", new BigDecimal("3"))
+      .setDecimal("long_pie", new BigDecimal("3147483647")
+    ).build();
+    JavaScriptTransform.Config config = new JavaScriptTransform.Config(
+      "function transform(input, emitter, context) { emitter.emit(input); }", outputSchema.toString(), null);
+    Transform<StructuredRecord, StructuredRecord> transform = new JavaScriptTransform(config);
+    transform.initialize(new MockTransformContext());
+    MockEmitter<StructuredRecord> emitter = new MockEmitter<>();
+    transform.transform(input, emitter);
+    StructuredRecord output = emitter.getEmitted().get(0);
+    Assert.assertEquals(outputSchema, output.getSchema());
+    Assert.assertEquals(input.getDecimal("pie"), output.getDecimal("pie"));
+    Assert.assertEquals(input.getDecimal("int_pie"), output.getDecimal("int_pie"));
+    Assert.assertEquals(input.getDecimal("long_pie"), output.getDecimal("long_pie"));
   }
 }
