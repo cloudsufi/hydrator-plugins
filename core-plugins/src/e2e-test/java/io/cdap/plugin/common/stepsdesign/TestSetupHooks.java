@@ -244,7 +244,16 @@ public class TestSetupHooks {
     BeforeActions.scenario.write("Normalize 1st bucket name - " + gcsSourceBucketName1);
   }
 
-  @After(order = 1, value = "@NORMALIZE_TEST1")
+  @Before(order = 1, value = "@NORMALIZE_TEST3")
+  public static void createBucketWithNormalizeTest3File() throws IOException, URISyntaxException {
+    gcsSourceBucketName1 = createGCSBucketWithFile(PluginPropertyUtils.pluginProp(
+      "normalizeCsvAllDataTypeFile3"));
+    PluginPropertyUtils.addPluginProp("normalizeTest3", "gs://" + gcsSourceBucketName1 + "/"  +
+      PluginPropertyUtils.pluginProp("normalizeCsvAllDataTypeFile3"));
+    BeforeActions.scenario.write("Normalize 1st bucket name - " + gcsSourceBucketName1);
+  }
+
+  @After(order = 1, value = "@NORMALIZE_TEST1 or @NORMALIZE_TEST3")
   public static void deleteSourceBucketWithNormalizeTest1File() {
     deleteGCSBucket(gcsSourceBucketName1);
     gcsSourceBucketName1 = StringUtils.EMPTY;
