@@ -167,7 +167,7 @@ public class TestSetupHooks {
     BeforeActions.scenario.write("Group by bucket name - " + gcsSourceBucketName1);
   }
 
-  @After(order = 1, value = "@GROUP_BY_TEST")
+  @After(order = 1, value = "@GROUP_BY_TEST or @ROW_DENO_TEST")
   public static void deleteSourceBucketWithGroupByTest1File() {
     deleteGCSBucket(gcsSourceBucketName1);
     gcsSourceBucketName1 = StringUtils.EMPTY;
@@ -522,5 +522,13 @@ public class TestSetupHooks {
     PluginPropertyUtils.addPluginProp("xmlTestFile", "gs://" + fileSourceBucket + "/testdata/xmldata/"
       + "*");
     BeforeActions.scenario.write("xml test bucket name - " + fileSourceBucket);
+  }
+
+  @Before(order = 1, value = "@ROW_DENO_TEST")
+  public static void createBucketWithRowDenormalizerTestFile() throws IOException, URISyntaxException {
+    gcsSourceBucketName1 = createGCSBucketWithFile(PluginPropertyUtils.pluginProp("rowDenoGcsCsvFile"));
+    PluginPropertyUtils.addPluginProp("rowDenoTest", "gs://" + gcsSourceBucketName1 + "/"  +
+      PluginPropertyUtils.pluginProp("rowDenoGcsCsvFile"));
+    BeforeActions.scenario.write("RowDenormalizer bucket name - " + gcsSourceBucketName1);
   }
 }
