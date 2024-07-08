@@ -318,11 +318,16 @@ public class ExcelInputReader extends BatchSource<LongWritable, Object, Structur
       processFiles = GSON.toJson(getAllProcessedFiles(batchSourceContext), ARRAYLIST_PREPROCESSED_FILES);
     }
 
+    Map<String, String> arguments = new HashMap<>(batchSourceContext.getArguments().asMap());
+    int byteArrayMaxOverride = arguments.containsKey(ExcelInputFormat.EXCEL_BYTE_ARRAY_MAX_OVERRIDE) ?
+      Integer.parseInt(arguments.get(ExcelInputFormat.EXCEL_BYTE_ARRAY_MAX_OVERRIDE)) :
+      ExcelInputFormat.EXCEL_BYTE_ARRAY_MAX_OVERRIDE_DEFAULT;
+
     ExcelInputFormat.setConfigurations(job, excelInputreaderConfig.filePattern, excelInputreaderConfig.sheet,
                                        excelInputreaderConfig.reprocess, excelInputreaderConfig.sheetValue,
                                        excelInputreaderConfig.columnList, excelInputreaderConfig.skipFirstRow,
                                        excelInputreaderConfig.terminateIfEmptyRow, excelInputreaderConfig.rowsLimit,
-                                       excelInputreaderConfig.ifErrorRecord, processFiles);
+                                       excelInputreaderConfig.ifErrorRecord, processFiles, byteArrayMaxOverride);
 
     // Sets the input path(s).
     ExcelInputFormat.addInputPaths(job, excelInputreaderConfig.filePath);

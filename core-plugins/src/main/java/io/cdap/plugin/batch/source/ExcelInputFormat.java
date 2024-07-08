@@ -41,6 +41,7 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.apache.poi.ss.util.CellReference;
+import org.apache.poi.util.IOUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -66,6 +67,8 @@ public class ExcelInputFormat extends TextInputFormat {
   public static final String FILE_PATTERN = "filePattern";
   public static final String SHEET = "sheet";
   public static final String SHEET_VALUE = "sheetValue";
+  public static final String EXCEL_BYTE_ARRAY_MAX_OVERRIDE = "excel.byteArrayMaxOverride";
+  public static final int EXCEL_BYTE_ARRAY_MAX_OVERRIDE_DEFAULT = Integer.MAX_VALUE / 2;
 
   @Override
   public RecordReader<LongWritable, Text> createRecordReader(InputSplit split, TaskAttemptContext context) {
@@ -80,7 +83,7 @@ public class ExcelInputFormat extends TextInputFormat {
   public static void setConfigurations(Job job, String filePattern, String sheet, boolean reprocess,
                                        String sheetValue, String columnList, boolean skipFirstRow,
                                        String terminateIfEmptyRow, String rowLimit, String ifErrorRecord,
-                                       String processedFiles) {
+                                       String processedFiles, int byteArrayMaxOverride) {
 
     Configuration configuration = job.getConfiguration();
     configuration.set(FILE_PATTERN, filePattern);
@@ -100,6 +103,7 @@ public class ExcelInputFormat extends TextInputFormat {
 
     configuration.set(IF_ERROR_RECORD, ifErrorRecord);
     configuration.set(PROCESSED_FILES, processedFiles);
+    configuration.set(EXCEL_BYTE_ARRAY_MAX_OVERRIDE, String.valueOf(byteArrayMaxOverride));
   }
 
 
@@ -175,6 +179,9 @@ public class ExcelInputFormat extends TextInputFormat {
             isStreaming = true;
             break;
           case OLE2:
+            // workaround for large files
+            IOUtils.setByteArrayMaxOverride(job.getInt(EXCEL_BYTE_ARRAY_MAX_OVERRIDE,
+                                                       ExcelInputFormat.EXCEL_BYTE_ARRAY_MAX_OVERRIDE_DEFAULT));
             workbook = WorkbookFactory.create(is);
             break;
           default:
