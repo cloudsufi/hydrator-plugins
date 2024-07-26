@@ -17,7 +17,7 @@ package io.cdap.plugin.common.spark;
 
 import io.cdap.cdap.api.data.format.StructuredRecord;
 import io.cdap.cdap.api.data.schema.Schema;
-import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.spark.mllib.linalg.SparseVector;
 
 import java.util.List;

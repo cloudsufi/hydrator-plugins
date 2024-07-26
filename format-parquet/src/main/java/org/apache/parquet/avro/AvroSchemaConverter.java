@@ -16,7 +16,6 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package org.apache.parquet.avro;
 
 import org.apache.avro.LogicalType;
@@ -32,7 +31,6 @@ import org.apache.parquet.schema.PrimitiveType;
 import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName;
 import org.apache.parquet.schema.Type;
 import org.apache.parquet.schema.Types;
-import org.apache.parquet.schema.LogicalTypeAnnotation.UUIDLogicalTypeAnnotation;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -44,12 +42,8 @@ import java.util.Optional;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static org.apache.avro.JsonProperties.NULL_VALUE;
-import static org.apache.parquet.avro.AvroReadSupport.READ_INT96_AS_FIXED;
-import static org.apache.parquet.avro.AvroReadSupport.READ_INT96_AS_FIXED_DEFAULT;
 import static org.apache.parquet.avro.AvroWriteSupport.WRITE_OLD_LIST_STRUCTURE;
 import static org.apache.parquet.avro.AvroWriteSupport.WRITE_OLD_LIST_STRUCTURE_DEFAULT;
-import static org.apache.parquet.avro.AvroWriteSupport.WRITE_PARQUET_UUID;
-import static org.apache.parquet.avro.AvroWriteSupport.WRITE_PARQUET_UUID_DEFAULT;
 import static org.apache.parquet.schema.LogicalTypeAnnotation.TimeUnit.MICROS;
 import static org.apache.parquet.schema.LogicalTypeAnnotation.TimeUnit.MILLIS;
 import static org.apache.parquet.schema.LogicalTypeAnnotation.dateType;
@@ -58,7 +52,6 @@ import static org.apache.parquet.schema.LogicalTypeAnnotation.enumType;
 import static org.apache.parquet.schema.LogicalTypeAnnotation.stringType;
 import static org.apache.parquet.schema.LogicalTypeAnnotation.timeType;
 import static org.apache.parquet.schema.LogicalTypeAnnotation.timestampType;
-import static org.apache.parquet.schema.LogicalTypeAnnotation.uuidType;
 import static org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName.*;
 import static org.apache.parquet.schema.Type.Repetition.REPEATED;
 
@@ -78,11 +71,10 @@ public class AvroSchemaConverter {
 
   private final boolean assumeRepeatedIsListElement;
   private final boolean writeOldListStructure;
-  private final boolean writeParquetUUID;
-  private final boolean readInt96AsFixed;
 
   public AvroSchemaConverter() {
-    this(ADD_LIST_ELEMENT_RECORDS_DEFAULT);
+    this.assumeRepeatedIsListElement = ADD_LIST_ELEMENT_RECORDS_DEFAULT;
+    this.writeOldListStructure = WRITE_OLD_LIST_STRUCTURE_DEFAULT;
   }
 
   /**
@@ -94,8 +86,6 @@ public class AvroSchemaConverter {
   AvroSchemaConverter(boolean assumeRepeatedIsListElement) {
     this.assumeRepeatedIsListElement = assumeRepeatedIsListElement;
     this.writeOldListStructure = WRITE_OLD_LIST_STRUCTURE_DEFAULT;
-    this.writeParquetUUID = WRITE_PARQUET_UUID_DEFAULT;
-    this.readInt96AsFixed = READ_INT96_AS_FIXED_DEFAULT;
   }
 
   public AvroSchemaConverter(Configuration conf) {
@@ -103,8 +93,6 @@ public class AvroSchemaConverter {
       ADD_LIST_ELEMENT_RECORDS, ADD_LIST_ELEMENT_RECORDS_DEFAULT);
     this.writeOldListStructure = conf.getBoolean(
       WRITE_OLD_LIST_STRUCTURE, WRITE_OLD_LIST_STRUCTURE_DEFAULT);
-    this.writeParquetUUID = conf.getBoolean(WRITE_PARQUET_UUID, WRITE_PARQUET_UUID_DEFAULT);
-    this.readInt96AsFixed = conf.getBoolean(READ_INT96_AS_FIXED, READ_INT96_AS_FIXED_DEFAULT);
   }
 
   /**
@@ -159,7 +147,6 @@ public class AvroSchemaConverter {
   private Type convertField(String fieldName, Schema schema, Type.Repetition repetition) {
     Types.PrimitiveBuilder<PrimitiveType> builder;
     Schema.Type type = schema.getType();
-    LogicalType logicalType = schema.getLogicalType();
     if (type.equals(Schema.Type.BOOLEAN)) {
       builder = Types.primitive(BOOLEAN, repetition);
     } else if (type.equals(Schema.Type.INT)) {
@@ -173,12 +160,7 @@ public class AvroSchemaConverter {
     } else if (type.equals(Schema.Type.BYTES)) {
       builder = Types.primitive(BINARY, repetition);
     } else if (type.equals(Schema.Type.STRING)) {
-      if (logicalType != null && logicalType.getName().equals(LogicalTypes.uuid().getName()) && writeParquetUUID) {
-        builder = Types.primitive(FIXED_LEN_BYTE_ARRAY, repetition)
-          .length(LogicalTypeAnnotation.UUIDLogicalTypeAnnotation.BYTES);
-      } else {
-        builder = Types.primitive(BINARY, repetition).as(stringType());
-      }
+      builder = Types.primitive(BINARY, repetition).as(stringType());
     } else if (type.equals(Schema.Type.RECORD)) {
       return new GroupType(repetition, fieldName, convertFields(schema.getFields()));
     } else if (type.equals(Schema.Type.ENUM)) {
@@ -206,6 +188,7 @@ public class AvroSchemaConverter {
 
     // schema translation can only be done for known logical types because this
     // creates an equivalence
+    LogicalType logicalType = schema.getLogicalType();
     if (logicalType != null) {
       if (logicalType instanceof LogicalTypes.Decimal) {
         LogicalTypes.Decimal decimal = (LogicalTypes.Decimal) logicalType;
@@ -326,12 +309,8 @@ public class AvroSchemaConverter {
           }
           @Override
           public Schema convertFIXED_LEN_BYTE_ARRAY(PrimitiveTypeName primitiveTypeName) {
-            if (annotation instanceof LogicalTypeAnnotation.UUIDLogicalTypeAnnotation) {
-              return Schema.create(Schema.Type.STRING);
-            } else {
-              int size = parquetType.asPrimitiveType().getTypeLength();
-              return Schema.createFixed(parquetType.getName(), null, null, size);
-            }
+            int size = parquetType.asPrimitiveType().getTypeLength();
+            return Schema.createFixed(parquetType.getName(), null, null, size);
           }
           @Override
           public Schema convertBINARY(PrimitiveTypeName primitiveTypeName) {
@@ -443,8 +422,6 @@ public class AvroSchemaConverter {
       return timestampType(true, MILLIS);
     } else if (logicalType instanceof LogicalTypes.TimestampMicros) {
       return timestampType(true, MICROS);
-    } else if (logicalType.getName().equals(LogicalTypes.uuid().getName()) && writeParquetUUID) {
-      return uuidType();
     }
     return null;
   }
@@ -486,11 +463,6 @@ public class AvroSchemaConverter {
             return of(LogicalTypes.timestampMicros());
         }
         return empty();
-      }
-
-      @Override
-      public Optional<LogicalType> visit(UUIDLogicalTypeAnnotation uuidLogicalType) {
-        return of(LogicalTypes.uuid());
       }
     }).orElse(null);
   }

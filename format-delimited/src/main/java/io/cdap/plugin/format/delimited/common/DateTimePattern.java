@@ -20,7 +20,6 @@ import com.google.gson.Gson;
 import io.cdap.plugin.format.delimited.dto.DateTimeStandard;
 import io.cdap.plugin.format.delimited.dto.SupportedDateTimeStandards;
 import org.apache.commons.lang3.StringUtils;
-import org.codehaus.jackson.map.ObjectMapper;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
