@@ -120,11 +120,7 @@ public abstract class AbstractFileSource<T extends PluginConfig & FileSourceProp
     // are not macro
     Schema schema = config.getSchema();
 
-    PluginProperties.Builder builder = PluginProperties.builder();
-    builder.addAll(config.getRawProperties().getProperties());
-
-    ValidatingInputFormat validatingInputFormat =
-      pipelineConfigurer.usePlugin(ValidatingInputFormat.PLUGIN_TYPE, fileFormat, fileFormat, builder.build());
+    ValidatingInputFormat validatingInputFormat = getValidatingInputFormat(pipelineConfigurer);
     FormatContext context = new FormatContext(collector, null);
 
     if (validatingInputFormat != null && schema == null && !config.containsMacro("schema")) {
@@ -148,25 +144,17 @@ public abstract class AbstractFileSource<T extends PluginConfig & FileSourceProp
     pipelineConfigurer.getStageConfigurer().setOutputSchema(schema);
   }
 
+  protected ValidatingInputFormat getValidatingInputFormat(PipelineConfigurer pipelineConfigurer) {
+    return pipelineConfigurer.usePlugin(ValidatingInputFormat.PLUGIN_TYPE, config.getFormatName(),
+                                        config.getFormatName(), config.getRawProperties());
+  }
+
   @Override
   public void prepareRun(BatchSourceContext context) throws Exception {
     FailureCollector collector = context.getFailureCollector();
     config.validate(collector);
     String fileFormat = config.getFormatName();
-    ValidatingInputFormat validatingInputFormat;
-    try {
-      validatingInputFormat = context.newPluginInstance(fileFormat);
-    } catch (InvalidPluginConfigException e) {
-      Set<String> properties = new HashSet<>(e.getMissingProperties());
-      for (InvalidPluginProperty invalidProperty: e.getInvalidProperties()) {
-        properties.add(invalidProperty.getName());
-      }
-      String errorMessage = String.format("Format '%s' cannot be used because properties %s were not provided or " +
-                                            "were invalid when the pipeline was deployed. Set the format to a " +
-                                            "different value, or re-create the pipeline with all required properties.",
-                                          fileFormat, properties);
-      throw new IllegalArgumentException(errorMessage, e);
-    }
+    ValidatingInputFormat validatingInputFormat = getInputFormatForRun(context);
 
     FormatContext formatContext = new FormatContext(collector, null);
     Schema schema = context.getOutputSchema() == null ?
@@ -237,6 +225,25 @@ public abstract class AbstractFileSource<T extends PluginConfig & FileSourceProp
     }
 
     context.setInput(Input.of(config.getReferenceName(), new SourceInputFormatProvider(inputFormatClass, conf)));
+  }
+
+  protected ValidatingInputFormat getInputFormatForRun(BatchSourceContext context)
+    throws InstantiationException {
+    String fileFormat = config.getFormatName();
+    try {
+      return context.newPluginInstance(fileFormat);
+    } catch (InvalidPluginConfigException e) {
+      Set<String> properties = new HashSet<>(e.getMissingProperties());
+      for (InvalidPluginProperty invalidProperty: e.getInvalidProperties()) {
+        properties.add(invalidProperty.getName());
+      }
+      String errorMessage = String.format("Format '%s' cannot be used because properties %s "
+          + "were not provided or were invalid when the pipeline was deployed. "
+          + "Set the format to a different value, "
+          + "or re-create the pipeline with all required properties.",
+        fileFormat, properties);
+      throw new IllegalArgumentException(errorMessage, e);
+    }
   }
 
   @Override
