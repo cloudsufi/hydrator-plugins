@@ -1,0 +1,5 @@
+103,false,Peach,4.0,false,1,Plum,0.0,true,Peach,Peach,true
+101,false,Apple,6.25,false,1,Apple,2.5,true,Banana,Apple,true
+105,false,,0.0,false,0,Watermelon,0.0,true,Watermelon,,true
+102,false,Orange, Grapes,16.0,false,2,Orange,4.0,true,Orange,Orange, Grapes,true
+104,true,Pineapple, Apple,16.0,true,2,Apple,4.0,true,Pineapple,Pineapple, Apple,true

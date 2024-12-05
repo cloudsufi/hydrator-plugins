@@ -1,0 +1,5 @@
+{"customer_id":103,"products_CollectList":["Peach","Plum"],"unique_products_CollectSet":["Plum","Peach"],"unique_products_above_5":["Plum","Peach"],"products_above_5":["Peach","Plum"]}
+{"customer_id":101,"products_CollectList":["Apple","Banana"],"unique_products_CollectSet":["Apple","Banana"],"unique_products_above_5":["Apple","Banana"],"products_above_5":["Apple","Banana"]}
+{"customer_id":105,"products_CollectList":["Watermelon","Banana"],"unique_products_CollectSet":["Watermelon","Banana"],"unique_products_above_5":["Watermelon","Banana"],"products_above_5":["Watermelon","Banana"]}
+{"customer_id":102,"products_CollectList":["Orange","Grapes"],"unique_products_CollectSet":["Grapes","Orange"],"unique_products_above_5":["Grapes","Orange"],"products_above_5":["Orange","Grapes"]}
+{"customer_id":104,"products_CollectList":["Pineapple","Apple"],"unique_products_CollectSet":["Apple","Pineapple"],"unique_products_above_5":["Apple","Pineapple"],"products_above_5":["Pineapple","Apple"]}
