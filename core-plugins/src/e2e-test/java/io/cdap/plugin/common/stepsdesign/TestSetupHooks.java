@@ -472,7 +472,7 @@ public class TestSetupHooks {
   }
 
   private static String createGCSBucketWithXmlFile(String filePath) throws IOException, URISyntaxException {
-    String bucketName = StorageClient.createBucket("e2e-test-xml").getName();
+    String bucketName = StorageClient.createBucket("e2e-test-" + UUID.randomUUID()).getName();
     StorageClient.uploadObject(bucketName, filePath, filePath);
     return bucketName;
   }
@@ -522,6 +522,8 @@ public class TestSetupHooks {
     fileSourceBucket = createGCSBucketWithXmlFile(PluginPropertyUtils.pluginProp("xmlFile"));
     PluginPropertyUtils.addPluginProp("xmlTestFile", "gs://" + fileSourceBucket + "/"  +
       PluginPropertyUtils.pluginProp("xmlFile"));
+    PluginPropertyUtils.addPluginProp("bucketName", fileSourceBucket);
+    PluginPropertyUtils.addPluginProp("targetFolder", "gs://" + fileSourceBucket + "/");
     BeforeActions.scenario.write("xml test bucket name - " + fileSourceBucket);
   }
 
