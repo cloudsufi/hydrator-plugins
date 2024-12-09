@@ -97,6 +97,11 @@ public class ValidationHelper {
     validateBothFilesData(outputFileData, expectedOutputFilePath);
   }
 
+  public static void compareDataForXml(String fileSinkBucketPath, String expectedOutputFilePath, String bucketName) {
+    List<String> outputFileData = readAllFilesFromDirectory(PluginPropertyUtils.pluginProp(fileSinkBucketPath));
+    validateBothFilesDataForXml(outputFileData, expectedOutputFilePath, bucketName);
+  }
+
   // Reading data from all part-r files present in a directory.
   public static List<String> readAllFilesFromDirectory(String directoryPath) {
     List<String> outputFileData = new ArrayList<>();
@@ -143,5 +148,41 @@ public class ValidationHelper {
     byte[] second = storage.readAllBytes(expectedOutputFilesBucketName, secondFilePath);
 
     return Arrays.equals(first, second);
+  }
+
+  private static void validateBothFilesDataForXml(List<String> outputFileData, String expectedOutputFilePath,
+                                                  String bucketName) {
+    String[] expectedOutputFileData = fetchObjectData(projectId, expectedOutputFilesBucketName, expectedOutputFilePath);
+    String xmlExpectedFileBucketName = PluginPropertyUtils.pluginProp("xmlBucketName");
+    // Define the bucket names to remove
+    String expectedFileBucketPath = "gs://" + xmlExpectedFileBucketName + "/";
+    String outputFileBucketPath = "gs://" + bucketName + "/";
+
+    // Normalize expected data by removing the bucket name
+    List<String> normalizedExpectedData = new ArrayList<>();
+    for (String line : expectedOutputFileData) {
+      normalizedExpectedData.add(line.replace(expectedFileBucketPath, ""));
+    }
+
+    // Normalize output data by removing the bucket name
+    List<String> normalizedOutputData = new ArrayList<>();
+    for (String line : outputFileData) {
+      normalizedOutputData.add(line.replace(outputFileBucketPath, ""));
+    }
+
+    // Compare normalized data
+    int counter = 0;
+    for (String expectedLine : normalizedExpectedData) {
+      Assert.assertTrue(
+        "Output file and Expected file data should be the same",
+        normalizedOutputData.contains(expectedLine)
+      );
+      counter++;
+    }
+    Assert.assertEquals(
+      "Number of lines in output file and expected file should match",
+      normalizedExpectedData.size(),
+      counter
+    );
   }
 }
