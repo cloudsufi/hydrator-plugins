@@ -1,0 +1,11 @@
+transaction_id,customer_id,product,amount,transaction_date,is_promotion
+1,101,Apple,10,01/01/2024,TRUE
+2,101,Banana,5,02/01/2024,FALSE
+3,102,Orange,7,03/01/2024,TRUE
+4,102,Grapes,15,04/01/2024,FALSE
+5,103,Peach,8,05/01/2024,TRUE
+6,103,Plum,4,06/01/2024,FALSE
+7,104,Pineapple,20,07/01/2024,TRUE
+8,104,Apple,12,08/01/2024,TRUE
+9,105,Watermelon,5,09/01/2024,TRUE
+10,105,Banana,3,10/01/2024,FALSE
