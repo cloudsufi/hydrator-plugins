@@ -185,4 +185,28 @@ public class ValidationHelper {
       counter
     );
   }
+
+  public static void listBucketObjectsForXml(String bucketName, String expectedOutputFilePath) {
+    List<String> bucketObjectNames = new ArrayList<>();
+    List<String> fileData = new ArrayList<>();
+    String sourceBucketName = TestSetupHooks.fileSourceBucket;
+    Storage storage = StorageOptions.newBuilder().setProjectId(projectId).build().getService();
+    Page<Blob> blobs = storage.list(bucketName);
+
+    // Adding all the Objects which have data in a list.
+    List<Blob> bucketObjects = StreamSupport.stream(blobs.iterateAll().spliterator(), true)
+      .filter(blob -> blob.getSize() != 0)
+      .collect(Collectors.toList());
+
+    Stream<String> objectNamesWithData = bucketObjects.stream().map(blob -> blob.getName());
+    objectNamesWithData.forEach(objectName -> bucketObjectNames.add(objectName));
+
+    // Fetching the data for all the part-r Files
+    for (String objectName : bucketObjectNames) {
+      if (objectName.contains("part-r")) {
+        Collections.addAll(fileData, fetchObjectData(projectId, bucketName, objectName));
+      }
+    }
+    validateBothFilesDataForXml(fileData, expectedOutputFilePath, sourceBucketName);
+  }
 }
