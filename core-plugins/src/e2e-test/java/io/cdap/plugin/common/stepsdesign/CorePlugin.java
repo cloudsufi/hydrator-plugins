@@ -130,7 +130,7 @@ public class CorePlugin implements CdfHelper {
                                          PluginPropertyUtils.pluginProp(expectedOutputFilePath), bucketName);
     } else {
       String outputFileSinkBucketName = PluginPropertyUtils.pluginProp(fileSinkBucketPath);
-      ValidationHelper.listBucketObjects(outputFileSinkBucketName.substring(5),
+      ValidationHelper.listBucketObjectsForXml(outputFileSinkBucketName.substring(5),
                                          PluginPropertyUtils.pluginProp(expectedOutputFilePath));
     }
   }
