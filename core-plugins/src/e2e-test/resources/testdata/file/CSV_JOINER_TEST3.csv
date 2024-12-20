@@ -1,0 +1,6 @@
+id,firstname,lastname,streetaddress,city,state,zipcode,phonenumber
+1,John,Doe,123 Main St,New York,NY,10001,1234567890
+1,Jane,Smith,456 Elm St,New York,NY,10001,9876543210
+1,Alice,Johnson,789 Oak St,New York,NY,10001,4561237890
+2,Bob,Brown,101 Pine St,San Francisco,CA,94105,1237894560
+3,Charlie,White,202 Maple St,Austin,TX,73301,7894561230

@@ -197,7 +197,16 @@ public class TestSetupHooks {
     BeforeActions.scenario.write("Joiner 1st bucket name - " + gcsSourceBucketName1);
   }
 
-  @After(order = 1, value = "@JOINER_TEST1")
+  @Before(order = 1, value = "@JOINER_TEST5")
+  public static void createBucketWithJoinerTest5File() throws IOException, URISyntaxException {
+    gcsSourceBucketName1 = createGCSBucketWithFile(PluginPropertyUtils.pluginProp(
+      "joinerCsvFileFifthInput"));
+    PluginPropertyUtils.addPluginProp("joinerInputTest5", "gs://" + gcsSourceBucketName1 + "/"  +
+      PluginPropertyUtils.pluginProp("joinerCsvFileFifthInput"));
+    BeforeActions.scenario.write("Joiner bucket name - " + gcsSourceBucketName1);
+  }
+
+  @After(order = 1, value = "@JOINER_TEST1 or @JOINER_TEST5")
   public static void deleteSourceBucketWithJoinerTest1File() {
     deleteGCSBucket(gcsSourceBucketName1);
     gcsSourceBucketName1 = StringUtils.EMPTY;
