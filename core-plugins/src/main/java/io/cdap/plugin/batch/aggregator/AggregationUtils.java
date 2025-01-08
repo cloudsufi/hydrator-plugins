@@ -17,6 +17,9 @@
 package io.cdap.plugin.batch.aggregator;
 
 import io.cdap.cdap.api.data.schema.Schema;
+import io.cdap.cdap.api.exception.ErrorCategory;
+import io.cdap.cdap.api.exception.ErrorType;
+import io.cdap.cdap.api.exception.ErrorUtils;
 
 /**
  * Common functions for aggregation related functionalities.
@@ -69,8 +72,10 @@ public final class AggregationUtils {
                                         Schema.Type fieldType, String expectedType) {
     Schema.LogicalType logicalType = fieldSchema.isNullable() ? fieldSchema.getNonNullable().getLogicalType() :
       fieldSchema.getLogicalType();
-    throw new IllegalArgumentException(String.format(
+    String error = String.format(
       "Cannot compute %s on field %s because its type %s is not %s", functionName, fieldName,
-      logicalType == null ? fieldType : logicalType, expectedType));
+      logicalType == null ? fieldType : logicalType, expectedType);
+    throw ErrorUtils.getProgramFailureException(new ErrorCategory(ErrorCategory.ErrorCategoryEnum.PLUGIN), error, error,
+                                                ErrorType.USER, false, null);
   }
 }

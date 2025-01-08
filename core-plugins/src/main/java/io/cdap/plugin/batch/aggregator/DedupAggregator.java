@@ -21,6 +21,9 @@ import io.cdap.cdap.api.annotation.Name;
 import io.cdap.cdap.api.annotation.Plugin;
 import io.cdap.cdap.api.data.format.StructuredRecord;
 import io.cdap.cdap.api.data.schema.Schema;
+import io.cdap.cdap.api.exception.ErrorCategory;
+import io.cdap.cdap.api.exception.ErrorType;
+import io.cdap.cdap.api.exception.ErrorUtils;
 import io.cdap.cdap.etl.api.Emitter;
 import io.cdap.cdap.etl.api.FailureCollector;
 import io.cdap.cdap.etl.api.PipelineConfigurer;
@@ -160,9 +163,10 @@ public class DedupAggregator extends RecordReducibleAggregator<StructuredRecord>
     if (selectionFunction == null) {
       Schema.Field field = record1.getSchema().getField(filterFunction.getField());
       if (field == null) {
-        throw new IllegalArgumentException(
-          String.format("Field '%s' cannot be used as a filter field since it does not exist in the output schema",
-                        filterFunction.getField()));
+        String error = String.format("Failed to merge values because the field '%s' cannot be used as a " +
+          "filter field since it does not exist in the output schema", filterFunction.getField());
+        throw ErrorUtils.getProgramFailureException(new ErrorCategory(ErrorCategory.ErrorCategoryEnum.PLUGIN),
+          error, error, ErrorType.USER, false, null);
       }
       selectionFunction = filterFunction.getSelectionFunction(field.getSchema());
     }
@@ -174,8 +178,10 @@ public class DedupAggregator extends RecordReducibleAggregator<StructuredRecord>
     for (String fieldName : dedupConfig.getUniqueFields()) {
       Schema.Field field = inputSchema.getField(fieldName);
       if (field == null) {
-        throw new IllegalArgumentException(String.format("Field %s does not exist in input schema %s.",
-                                                         fieldName, inputSchema));
+        String error = String.format("Failed to groupBy because field %s does not exist in input schema %s.",
+          fieldName, inputSchema);
+        throw ErrorUtils.getProgramFailureException(new ErrorCategory(ErrorCategory.ErrorCategoryEnum.PLUGIN),
+          error, error, ErrorType.USER, false, null);
       }
       fields.add(field);
     }

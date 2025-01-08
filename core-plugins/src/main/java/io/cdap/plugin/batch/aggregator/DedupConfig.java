@@ -22,6 +22,9 @@ import com.google.common.base.Strings;
 import io.cdap.cdap.api.annotation.Description;
 import io.cdap.cdap.api.annotation.Macro;
 import io.cdap.cdap.api.data.schema.Schema;
+import io.cdap.cdap.api.exception.ErrorCategory;
+import io.cdap.cdap.api.exception.ErrorType;
+import io.cdap.cdap.api.exception.ErrorUtils;
 import io.cdap.plugin.batch.aggregator.function.Any;
 import io.cdap.plugin.batch.aggregator.function.First;
 import io.cdap.plugin.batch.aggregator.function.Last;
@@ -91,8 +94,10 @@ public class DedupConfig extends AggregatorConfig {
     }
 
     if (filterParts.size() != 2) {
-      throw new IllegalArgumentException(String.format("Invalid filter operation. It should be of format " +
-                                                         "'fieldName:functionName'. But got : %s", filterOperation));
+      String error = String.format("Invalid filter operation. It should be of format " +
+        "'fieldName:functionName'. But got : %s", filterOperation);
+      throw ErrorUtils.getProgramFailureException(new ErrorCategory(ErrorCategory.ErrorCategoryEnum.PLUGIN),
+        error, error, ErrorType.USER, false, null);
     }
 
     Function function;
@@ -106,8 +111,12 @@ public class DedupConfig extends AggregatorConfig {
     try {
       function = Function.valueOf(functionStr.toUpperCase());
     } catch (IllegalArgumentException e) {
-      throw new IllegalArgumentException(String.format("Invalid function '%s'. Must be one of %s.",
-                                                       functionStr, Joiner.on(',').join(Function.values())));
+      String errorReason = String.format("Invalid function '%s'. Must be one of %s.",
+        functionStr, Joiner.on(',').join(Function.values()));
+      String errorMessage = String.format("Failed to filter due to invalid function '%s' with message: %s. " +
+        "Must be one of %s.", functionStr, e.getMessage(), Joiner.on(',').join(Function.values()));
+      throw ErrorUtils.getProgramFailureException(new ErrorCategory(ErrorCategory.ErrorCategoryEnum.PLUGIN),
+        errorReason, errorMessage, ErrorType.USER, false, e);
     }
     return new DedupFunctionInfo(fieldName, function);
   }
@@ -142,9 +151,10 @@ public class DedupConfig extends AggregatorConfig {
         case MIN:
           return new MinSelection(field, fieldSchema);
       }
-      throw new IllegalArgumentException(String.format(
-        "The function '%s' provided is not supported. It must be one of %s.",
-        function, Joiner.on(',').join(Function.values())));
+      String error = String.format("The function '%s' provided is not supported. It must be one of %s.",
+        function, Joiner.on(',').join(Function.values()));
+      throw ErrorUtils.getProgramFailureException(new ErrorCategory(ErrorCategory.ErrorCategoryEnum.PLUGIN),
+        error, error, ErrorType.USER, false, null);
     }
 
     @Override
