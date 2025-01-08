@@ -24,6 +24,9 @@ import io.cdap.cdap.api.annotation.Name;
 import io.cdap.cdap.api.annotation.Plugin;
 import io.cdap.cdap.api.data.format.StructuredRecord;
 import io.cdap.cdap.api.data.schema.Schema;
+import io.cdap.cdap.api.exception.ErrorCategory;
+import io.cdap.cdap.api.exception.ErrorType;
+import io.cdap.cdap.api.exception.ErrorUtils;
 import io.cdap.cdap.etl.api.Emitter;
 import io.cdap.cdap.etl.api.FailureCollector;
 import io.cdap.cdap.etl.api.PipelineConfigurer;
@@ -36,7 +39,6 @@ import io.cdap.plugin.common.TransformLineageRecorderUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import javax.annotation.Nullable;
 
@@ -170,8 +172,10 @@ public class DistinctAggregator extends RecordReducibleAggregator<StructuredReco
     for (String fieldName : fields) {
       Schema.Field field = inputSchema.getField(fieldName);
       if (field == null) {
-        throw new IllegalArgumentException(String.format("Field %s does not exist in input schema %s.",
-                                                         fieldName, inputSchema));
+        String error = String.format("Failed to fetch record schema due to field %s does not exist in" +
+          " input schema %s.", fieldName, inputSchema);
+        throw ErrorUtils.getProgramFailureException(new ErrorCategory(ErrorCategory.ErrorCategoryEnum.PLUGIN),
+          error, error, ErrorType.USER, false, null);
       }
       outputFields.add(field);
     }
