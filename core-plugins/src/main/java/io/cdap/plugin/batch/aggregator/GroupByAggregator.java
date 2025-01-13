@@ -234,6 +234,8 @@ public class GroupByAggregator extends RecordReducibleAggregator<AggregateResult
   @Override
   public void prepareRun(BatchAggregatorContext context) throws Exception {
     super.prepareRun(context);
+    validate(context.getInputSchema(), conf.getGroupByFields(), conf.getAggregates(), context.getFailureCollector());
+    context.getFailureCollector().getOrThrowException();
     LinkedList<FieldOperation> fllOperations = new LinkedList<>();
     // in configurePipeline all the necessary checks have been performed already to set output schema
     if (SchemaValidator.canRecordLineage(context.getOutputSchema(), "output")) {
@@ -249,7 +251,6 @@ public class GroupByAggregator extends RecordReducibleAggregator<AggregateResult
         fllOperations.add(operation);
       }
     }
-    validateConditionalFunctions(context.getInputSchema(), conf.getAggregates(), context.getFailureCollector());
     context.record(fllOperations);
   }
 
