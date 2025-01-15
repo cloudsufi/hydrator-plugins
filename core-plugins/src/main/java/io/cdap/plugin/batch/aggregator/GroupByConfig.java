@@ -23,6 +23,9 @@ import com.google.common.base.Strings;
 import io.cdap.cdap.api.annotation.Description;
 import io.cdap.cdap.api.annotation.Macro;
 import io.cdap.cdap.api.data.schema.Schema;
+import io.cdap.cdap.api.exception.ErrorCategory;
+import io.cdap.cdap.api.exception.ErrorType;
+import io.cdap.cdap.api.exception.ErrorUtils;
 import io.cdap.plugin.batch.aggregator.function.AggregateFunction;
 import io.cdap.plugin.batch.aggregator.function.AnyIf;
 import io.cdap.plugin.batch.aggregator.function.Avg;
@@ -120,7 +123,9 @@ public class GroupByConfig extends AggregatorConfig {
       fields.add(field);
     }
     if (fields.isEmpty()) {
-      throw new IllegalArgumentException("The 'groupByFields' property must be set.");
+      String error = "Fields are empty. The 'groupByFields' property must be set.";
+      throw ErrorUtils.getProgramFailureException(new ErrorCategory(ErrorCategory.ErrorCategoryEnum.PLUGIN),
+        error, error, ErrorType.USER, false, null);
     }
     return fields;
   }
@@ -138,46 +143,63 @@ public class GroupByConfig extends AggregatorConfig {
     for (String aggregate : Splitter.on(',').trimResults().split(aggregates)) {
       int colonIdx = aggregate.indexOf(':');
       if (colonIdx < 0) {
-        throw new IllegalArgumentException(String.format(
-          "Could not find ':' separating aggregate name from its function in '%s'.", aggregate));
+        String error = String.format(
+          "Could not find ':' separating aggregate name from its function in '%s'.", aggregate);
+        throw ErrorUtils.getProgramFailureException(new ErrorCategory(ErrorCategory.ErrorCategoryEnum.PLUGIN),
+          error, error, ErrorType.USER, false, null);
       }
       String name = aggregate.substring(0, colonIdx).trim();
       if (!aggregateNames.add(name)) {
-        throw new IllegalArgumentException(String.format(
-          "Cannot create multiple aggregate functions with the same name '%s'.", name));
+        String error = String.format(
+          "Cannot create multiple aggregate functions with the same name '%s'.", name);
+        throw ErrorUtils.getProgramFailureException(new ErrorCategory(ErrorCategory.ErrorCategoryEnum.PLUGIN),
+          error, error, ErrorType.USER, false, null);
       }
 
       String functionAndField = aggregate.substring(colonIdx + 1).trim();
       int leftParanIdx = functionAndField.indexOf('(');
       if (leftParanIdx < 0) {
-        throw new IllegalArgumentException(String.format(
+        String error = String.format(
           "Could not find '(' in function '%s'. Functions must be specified as function(field).",
-          functionAndField));
+          functionAndField);
+        throw ErrorUtils.getProgramFailureException(new ErrorCategory(ErrorCategory.ErrorCategoryEnum.PLUGIN),
+          error, error, ErrorType.USER, false, null);
       }
       String functionStr = functionAndField.substring(0, leftParanIdx).trim();
       Function function;
       try {
         function = Function.valueOf(functionStr.toUpperCase());
       } catch (IllegalArgumentException e) {
-        throw new IllegalArgumentException(String.format(
-          "Invalid function '%s'. Must be one of %s.", functionStr, Joiner.on(',').join(Function.values())));
+        String errorReason = String.format(
+          "Invalid function '%s'. Must be one of %s.", functionStr, Joiner.on(',').join(Function.values()));
+        String errorMessage = String.format(
+          "Failed to fetch function due to invalid function '%s' with message: %s, must be one of %s.",
+          functionStr, e.getMessage(), Joiner.on(',').join(Function.values()));
+        throw ErrorUtils.getProgramFailureException(new ErrorCategory(ErrorCategory.ErrorCategoryEnum.PLUGIN),
+          errorReason, errorMessage, ErrorType.USER, false, e);
       }
 
       if (!functionAndField.endsWith(")")) {
-        throw new IllegalArgumentException(String.format(
+        String error = String.format(
           "Could not find closing ')' in function '%s'. Functions must be specified as function(field).",
-          functionAndField));
+          functionAndField);
+        throw ErrorUtils.getProgramFailureException(new ErrorCategory(ErrorCategory.ErrorCategoryEnum.PLUGIN),
+          error, error, ErrorType.USER, false, null);
       }
       int conditionIndex = functionAndField.toLowerCase().indexOf("condition(");
       // check if condition involved extract substring up to condition otherwise extract up to length of string
       int fieldEndIndex = (conditionIndex == -1) ? functionAndField.length() - 1 : conditionIndex - 2;
       String field = functionAndField.substring(leftParanIdx + 1, fieldEndIndex).trim();
       if (field.isEmpty()) {
-        throw new IllegalArgumentException(String.format(
-          "Invalid function '%s'. A field must be given as an argument.", functionAndField));
+        String error = String.format(
+          "Invalid function '%s'. A field must be given as an argument.", functionAndField);
+        throw ErrorUtils.getProgramFailureException(new ErrorCategory(ErrorCategory.ErrorCategoryEnum.PLUGIN),
+          error, error, ErrorType.USER, false, null);
       }
       if (conditionIndex == -1 && function.isConditional()) {
-        throw new IllegalArgumentException("Missing 'condition' property for conditional function.");
+        String error = "Missing 'condition' property for conditional function.";
+        throw ErrorUtils.getProgramFailureException(new ErrorCategory(ErrorCategory.ErrorCategoryEnum.PLUGIN),
+          error, error, ErrorType.USER, false, null);
       }
       String functionCondition = null;
       if (conditionIndex != -1) {
@@ -187,7 +209,9 @@ public class GroupByConfig extends AggregatorConfig {
         // department.equals('d1')
         functionCondition = functionAndField.substring(conditionIndex + 10, functionAndField.length() - 1);
         if (Strings.isNullOrEmpty(functionCondition)) {
-          throw new IllegalArgumentException("The 'condition' property is missing arguments.");
+          String error = "The 'condition' property is missing arguments.";
+          throw ErrorUtils.getProgramFailureException(new ErrorCategory(ErrorCategory.ErrorCategoryEnum.PLUGIN),
+            error, error, ErrorType.USER, false, null);
         }
         functionCondition = functionCondition.trim();
       }
@@ -195,7 +219,9 @@ public class GroupByConfig extends AggregatorConfig {
     }
 
     if (functionInfos.isEmpty()) {
-      throw new IllegalArgumentException("The 'aggregates' property must be set.");
+      String error = "The 'aggregates' property must be set.";
+      throw ErrorUtils.getProgramFailureException(new ErrorCategory(ErrorCategory.ErrorCategoryEnum.PLUGIN),
+        error, error, ErrorType.USER, false, null);
     }
     return functionInfos;
   }
@@ -326,7 +352,10 @@ public class GroupByConfig extends AggregatorConfig {
           return new AnyIf(field, fieldSchema, JexlCondition.of(condition));
       }
       // should never happen
-      throw new IllegalStateException("Unknown function type " + function);
+      String error = String.format("Failed to fetch Aggregate function for schema %s. Unknown function type %s.",
+        fieldSchema, function);
+      throw ErrorUtils.getProgramFailureException(new ErrorCategory(ErrorCategory.ErrorCategoryEnum.PLUGIN),
+        error, error, ErrorType.USER, false, null);
     }
 
     @Override

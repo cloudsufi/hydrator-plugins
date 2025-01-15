@@ -22,6 +22,9 @@ import io.cdap.cdap.api.annotation.Name;
 import io.cdap.cdap.api.annotation.Plugin;
 import io.cdap.cdap.api.data.format.StructuredRecord;
 import io.cdap.cdap.api.data.schema.Schema;
+import io.cdap.cdap.api.exception.ErrorCategory;
+import io.cdap.cdap.api.exception.ErrorType;
+import io.cdap.cdap.api.exception.ErrorUtils;
 import io.cdap.cdap.etl.api.Emitter;
 import io.cdap.cdap.etl.api.FailureCollector;
 import io.cdap.cdap.etl.api.PipelineConfigurer;
@@ -320,7 +323,7 @@ public class GroupByAggregator extends RecordReducibleAggregator<AggregateResult
   }
 
   @Override
-  public void groupBy(StructuredRecord record, Emitter<StructuredRecord> emitter) throws Exception {
+  public void groupBy(StructuredRecord record, Emitter<StructuredRecord> emitter) {
     // app should provide some way to make some data calculated in configurePipeline available here.
     // then we wouldn't have to calculate schema here
     StructuredRecord.Builder builder = StructuredRecord.builder(getGroupKeySchema(record.getSchema()));
@@ -372,9 +375,11 @@ public class GroupByAggregator extends RecordReducibleAggregator<AggregateResult
     for (String groupByField : groupByFields) {
       Schema.Field field = inputSchema.getField(groupByField);
       if (field == null) {
-        throw new IllegalArgumentException(String.format(
+        String error = String.format(
           "Cannot group by field '%s' because it does not exist in input schema %s.",
-          groupByField, inputSchema));
+          groupByField, inputSchema);
+        throw ErrorUtils.getProgramFailureException(new ErrorCategory(ErrorCategory.ErrorCategoryEnum.PLUGIN),
+          error, error, ErrorType.USER, false, null);
       }
       outputFields.add(field);
     }
@@ -407,9 +412,11 @@ public class GroupByAggregator extends RecordReducibleAggregator<AggregateResult
 
     Schema.Field inputField = inputSchema.getField(functionInfo.getField());
     if (inputField == null) {
-      throw new IllegalArgumentException(String.format(
+      String error = String.format(
         "Invalid aggregate %s(%s): Field '%s' does not exist in input schema %s.",
-        functionInfo.getFunction(), functionInfo.getField(), functionInfo.getField(), inputSchema));
+        functionInfo.getFunction(), functionInfo.getField(), functionInfo.getField(), inputSchema);
+      throw ErrorUtils.getProgramFailureException(new ErrorCategory(ErrorCategory.ErrorCategoryEnum.PLUGIN),
+        error, error, ErrorType.USER, false, null);
     }
     AggregateFunction aggregateFunction = functionInfo.getAggregateFunction(inputField.getSchema());
     return Schema.Field.of(functionInfo.getName(), aggregateFunction.getOutputSchema());
@@ -438,9 +445,11 @@ public class GroupByAggregator extends RecordReducibleAggregator<AggregateResult
     for (String groupByField : conf.getGroupByFields()) {
       Schema.Field fieldSchema = inputSchema.getField(groupByField);
       if (fieldSchema == null) {
-        throw new IllegalArgumentException(String.format(
+        String error = String.format(
           "Cannot group by field '%s' because it does not exist in input schema %s",
-          groupByField, inputSchema));
+          groupByField, inputSchema);
+        throw ErrorUtils.getProgramFailureException(new ErrorCategory(ErrorCategory.ErrorCategoryEnum.PLUGIN),
+          error, error, ErrorType.USER, false, null);
       }
       fields.add(fieldSchema);
     }
