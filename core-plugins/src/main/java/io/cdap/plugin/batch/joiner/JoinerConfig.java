@@ -25,6 +25,9 @@ import io.cdap.cdap.api.annotation.Macro;
 import io.cdap.cdap.api.annotation.Name;
 import io.cdap.cdap.api.data.schema.Schema;
 import io.cdap.cdap.api.dataset.lib.KeyValue;
+import io.cdap.cdap.api.exception.ErrorCategory;
+import io.cdap.cdap.api.exception.ErrorType;
+import io.cdap.cdap.api.exception.ErrorUtils;
 import io.cdap.cdap.api.plugin.PluginConfig;
 import io.cdap.cdap.etl.api.FailureCollector;
 import io.cdap.cdap.etl.api.join.JoinCondition;
@@ -264,7 +267,9 @@ public class JoinerConfig extends PluginConfig {
           .build();
     }
     // will never happen unless getConditionType() is changed without changing this
-    throw new IllegalStateException("Unsupported condition type " + conditionType);
+    String error = String.format("Unsupported condition type %s.", conditionType);
+    throw ErrorUtils.getProgramFailureException(new ErrorCategory(ErrorCategory.ErrorCategoryEnum.PLUGIN),
+      error, error, ErrorType.USER, false, null);
   }
 
   Set<JoinKey> getJoinKeys(FailureCollector failureCollector) {
