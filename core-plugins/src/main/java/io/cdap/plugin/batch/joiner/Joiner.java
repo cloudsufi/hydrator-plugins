@@ -86,7 +86,11 @@ public class Joiner extends BatchAutoJoiner {
       // If input schemas are unknown, an output schema must be provided.
       collector.addFailure("Output schema must be specified", null).withConfigProperty(JoinerConfig.OUTPUT_SCHEMA);
     }
-
+    if (!conf.containsMacro(JoinerConfig.NUM_PARTITIONS) && conf.getNumPartitions() != null &&
+      conf.getNumPartitions() < 0) {
+      collector.addFailure("Number of Partitions cannot be less than zero.", null)
+        .withConfigProperty(JoinerConfig.NUM_PARTITIONS);
+    }
     if (conf.requiredPropertiesContainMacros()) {
       return null;
     }
