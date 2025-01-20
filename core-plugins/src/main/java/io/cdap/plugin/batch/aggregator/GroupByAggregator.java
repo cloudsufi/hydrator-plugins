@@ -166,6 +166,12 @@ public class GroupByAggregator extends RecordReducibleAggregator<AggregateResult
 
     StageConfigurer stageConfigurer = pipelineConfigurer.getStageConfigurer();
     Schema inputSchema = stageConfigurer.getInputSchema();
+    if (!conf.containsMacro(AggregatorConfig.NUM_PARTITIONS) && conf.numPartitions != null
+        && conf.numPartitions < 0) {
+      stageConfigurer.getFailureCollector()
+          .addFailure("Number of Partitions cannot be less than zero.", null)
+          .withConfigProperty(AggregatorConfig.NUM_PARTITIONS);
+    }
     // if null, the input schema is unknown, or its multiple schemas.
     // if groupByFields is empty or aggregates is empty, that means they contain macros, which means the
     // output schema is not known at configure time.
