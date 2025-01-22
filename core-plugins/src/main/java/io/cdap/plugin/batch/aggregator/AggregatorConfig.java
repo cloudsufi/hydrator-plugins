@@ -18,6 +18,7 @@ package io.cdap.plugin.batch.aggregator;
 
 import io.cdap.cdap.api.annotation.Description;
 import io.cdap.cdap.api.annotation.Macro;
+import io.cdap.cdap.api.annotation.Name;
 import io.cdap.cdap.api.plugin.PluginConfig;
 
 import javax.annotation.Nullable;
@@ -26,8 +27,12 @@ import javax.annotation.Nullable;
  * Base aggregator config, since almost all aggregators should support setting the number of partitions.
  */
 public class AggregatorConfig extends PluginConfig {
+
+  public static final String NUM_PARTITIONS = "numPartitions";
+
   @Macro
   @Nullable
+  @Name(NUM_PARTITIONS)
   @Description("Number of partitions to use when aggregating. If not specified, the execution framework " +
     "will decide how many to use.")
   protected Integer numPartitions;
