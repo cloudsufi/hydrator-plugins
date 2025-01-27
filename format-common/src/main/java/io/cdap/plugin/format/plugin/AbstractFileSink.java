@@ -142,7 +142,8 @@ public abstract class AbstractFileSink<T extends PluginConfig & FileSinkProperti
     return null;
   }
 
-  protected ValidatingOutputFormat getOutputFormatForRun(BatchSinkContext context) {
+  protected ValidatingOutputFormat getOutputFormatForRun(BatchSinkContext context)
+      throws InstantiationException {
     FailureCollector collector = context.getFailureCollector();
     String fileFormat = config.getFormatName();
     try {
