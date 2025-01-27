@@ -36,6 +36,7 @@ import io.cdap.cdap.etl.api.batch.BatchRuntimeContext;
 import io.cdap.cdap.etl.api.batch.BatchSource;
 import io.cdap.cdap.etl.api.batch.BatchSourceContext;
 import io.cdap.cdap.etl.api.connector.Connector;
+import io.cdap.cdap.etl.api.exception.ErrorDetailsProviderSpec;
 import io.cdap.plugin.ConnectionConfig;
 import io.cdap.plugin.DBManager;
 import io.cdap.plugin.DBRecord;
@@ -50,6 +51,7 @@ import io.cdap.plugin.common.db.DBUtils;
 import io.cdap.plugin.common.db.DriverCleanup;
 import io.cdap.plugin.db.batch.TransactionIsolationLevel;
 import io.cdap.plugin.db.common.DBBaseConfig;
+import io.cdap.plugin.db.common.DBErrorDetailsProvider;
 import io.cdap.plugin.db.common.FQNGenerator;
 import io.cdap.plugin.db.connector.DBConnector;
 import io.cdap.plugin.db.connector.DBConnectorConfig;
@@ -67,7 +69,6 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.List;
 import java.util.Properties;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -129,8 +130,9 @@ public class DBSource extends ReferenceBatchSource<LongWritable, DBRecord, Struc
       } catch (IllegalAccessException | InstantiationException e) {
         collector.addFailure(String.format("Failed to instantiate JDBC driver: %s", e.getMessage()), null);
       } catch (SQLException e) {
-        collector.addFailure(
-          String.format("Encountered SQL error while getting query schema: %s", e.getMessage()), null);
+        collector.addFailure(String.format(
+          "Encountered SQL error while getting query schema with sqlState: '%s', errorCode: '%s', errorMessage: %s",
+          e.getSQLState(), e.getErrorCode(), e.getMessage()), null);
       }
     }
   }
@@ -191,6 +193,8 @@ public class DBSource extends ReferenceBatchSource<LongWritable, DBRecord, Struc
 
     // Create the external dataset before setting context properties
     emitLineage(context);
+    // set error details provider
+    context.setErrorDetailsProvider(new ErrorDetailsProviderSpec(DBErrorDetailsProvider.class.getName()));
     context.setInput(Input.of(sourceConfig.getReferenceName(),
                               new SourceInputFormatProvider(DataDrivenETLDBInputFormat.class, hConf)));
   }
@@ -202,7 +206,7 @@ public class DBSource extends ReferenceBatchSource<LongWritable, DBRecord, Struc
   }
 
   @Override
-  public void transform(KeyValue<LongWritable, DBRecord> input, Emitter<StructuredRecord> emitter) throws Exception {
+  public void transform(KeyValue<LongWritable, DBRecord> input, Emitter<StructuredRecord> emitter) {
     emitter.emit(StructuredRecordUtils.convertCase(
       input.getValue().getRecord(), FieldCase.toFieldCase(sourceConfig.getColumnNameCase())));
   }
