@@ -104,12 +104,11 @@ public abstract class AbstractFileSink<T extends PluginConfig & FileSinkProperti
   }
 
   @Override
-  public void prepareRun(BatchSinkContext context) {
+  public void prepareRun(BatchSinkContext context) throws Exception {
     FailureCollector collector = context.getFailureCollector();
     config.validate(collector, context.getArguments().asMap());
     String format = config.getFormatName();
-    ValidatingOutputFormat validatingOutputFormat = null;
-    validatingOutputFormat = getOutputFormatForRun(context, collector);
+    ValidatingOutputFormat validatingOutputFormat = getOutputFormatForRun(context);
     FormatContext formatContext = new FormatContext(collector, context.getInputSchema());
     validateOutputFormatProvider(formatContext, format, validatingOutputFormat);
     collector.getOrThrowException();
@@ -143,8 +142,8 @@ public abstract class AbstractFileSink<T extends PluginConfig & FileSinkProperti
     return null;
   }
 
-  protected ValidatingOutputFormat getOutputFormatForRun(BatchSinkContext context,
-      FailureCollector collector) {
+  protected ValidatingOutputFormat getOutputFormatForRun(BatchSinkContext context) {
+    FailureCollector collector = context.getFailureCollector();
     String fileFormat = config.getFormatName();
     try {
       return context.newPluginInstance(fileFormat);
