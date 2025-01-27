@@ -34,9 +34,8 @@ public class StructuredRecordUtils {
    * @param input {@link StructuredRecord}
    * @param fieldCase {@link FieldCase}
    * @return {@link StructuredRecord} which contains field names confirming to the {@link FieldCase} passed in
-   * @throws Exception if there is a conflict in the field names while converting the case
    */
-  public static StructuredRecord convertCase(StructuredRecord input, FieldCase fieldCase) throws Exception {
+  public static StructuredRecord convertCase(StructuredRecord input, FieldCase fieldCase) {
     if (fieldCase.equals(FieldCase.NONE)) {
       return input;
     }

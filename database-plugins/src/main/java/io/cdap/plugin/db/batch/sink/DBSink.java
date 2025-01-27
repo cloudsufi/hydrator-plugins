@@ -40,6 +40,7 @@ import io.cdap.cdap.etl.api.batch.BatchRuntimeContext;
 import io.cdap.cdap.etl.api.batch.BatchSink;
 import io.cdap.cdap.etl.api.batch.BatchSinkContext;
 import io.cdap.cdap.etl.api.connector.Connector;
+import io.cdap.cdap.etl.api.exception.ErrorDetailsProviderSpec;
 import io.cdap.plugin.DBManager;
 import io.cdap.plugin.DBRecord;
 import io.cdap.plugin.FieldCase;
@@ -50,6 +51,7 @@ import io.cdap.plugin.common.ReferencePluginConfig;
 import io.cdap.plugin.common.db.DBUtils;
 import io.cdap.plugin.db.batch.TransactionIsolationLevel;
 import io.cdap.plugin.db.common.DBBaseConfig;
+import io.cdap.plugin.db.common.DBErrorDetailsProvider;
 import io.cdap.plugin.db.common.FQNGenerator;
 import io.cdap.plugin.db.connector.DBConnector;
 import io.cdap.plugin.db.connector.DBConnectorConfig;
@@ -133,7 +135,8 @@ public class DBSink extends ReferenceBatchSink<StructuredRecord, DBRecord, NullW
     } finally {
       DBUtils.cleanup(driverClass);
     }
-
+    // set error details provider
+    context.setErrorDetailsProvider(new ErrorDetailsProviderSpec(DBErrorDetailsProvider.class.getName()));
     context.addOutput(Output.of(dbSinkConfig.getReferenceName(),
                                 new DBOutputFormatProvider(dbSinkConfig, driverClass, context.getArguments())));
 
@@ -152,7 +155,7 @@ public class DBSink extends ReferenceBatchSink<StructuredRecord, DBRecord, NullW
   }
 
   @Override
-  public void transform(StructuredRecord input, Emitter<KeyValue<DBRecord, NullWritable>> emitter) throws Exception {
+  public void transform(StructuredRecord input, Emitter<KeyValue<DBRecord, NullWritable>> emitter) {
     // Create StructuredRecord that only has the columns in this.columns
     List<Schema.Field> outputFields = new ArrayList<>();
     for (String column : columns) {

@@ -20,6 +20,9 @@ import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import io.cdap.cdap.api.data.schema.Schema;
 import io.cdap.cdap.api.data.schema.UnsupportedTypeException;
+import io.cdap.cdap.api.exception.ErrorCategory;
+import io.cdap.cdap.api.exception.ErrorType;
+import io.cdap.cdap.api.exception.ErrorUtils;
 import io.cdap.cdap.api.plugin.PluginConfigurer;
 import io.cdap.cdap.api.plugin.PluginProperties;
 import io.cdap.cdap.etl.api.FailureCollector;
@@ -281,7 +284,7 @@ public final class DBUtils {
    * @return the converted CDAP schema
    */
   public static Schema getSchema(String typeName, int sqlType, int precision, int scale, String columnName,
-                                 boolean isSigned, boolean handleAsDecimal) throws SQLException {
+                                 boolean isSigned, boolean handleAsDecimal) {
     // Type.STRING covers sql types - VARCHAR,CHAR,CLOB,LONGNVARCHAR,LONGVARCHAR,NCHAR,NCLOB,NVARCHAR
     Schema.Type type = Schema.Type.STRING;
     switch (sqlType) {
@@ -361,8 +364,9 @@ public final class DBUtils {
       case Types.REF:
       case Types.SQLXML:
       case Types.STRUCT:
-        throw new SQLException(new UnsupportedTypeException(
-          String.format("Column %s has unsupported SQL type of %s.", columnName, sqlType)));
+        String errorMessage = String.format("Column %s has unsupported SQL type of %s.", columnName, typeName);
+        throw ErrorUtils.getProgramFailureException(new ErrorCategory(ErrorCategory.ErrorCategoryEnum.PLUGIN),
+          errorMessage, errorMessage, ErrorType.SYSTEM, true, null);
     }
 
     return Schema.of(type);
@@ -522,6 +526,8 @@ public final class DBUtils {
   }
 
   private DBUtils() {
-    throw new AssertionError("Should not instantiate static utility class.");
+    String errorMessage = "Should not instantiate static utility class.";
+    throw ErrorUtils.getProgramFailureException(new ErrorCategory(ErrorCategory.ErrorCategoryEnum.PLUGIN), errorMessage,
+      errorMessage, ErrorType.SYSTEM, false, null);
   }
 }
