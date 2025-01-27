@@ -154,11 +154,11 @@ public abstract class AbstractFileSource<T extends PluginConfig & FileSourceProp
   }
 
   @Override
-  public void prepareRun(BatchSourceContext context) {
+  public void prepareRun(BatchSourceContext context) throws Exception {
     FailureCollector collector = context.getFailureCollector();
     config.validate(collector);
     String fileFormat = config.getFormatName();
-    ValidatingInputFormat validatingInputFormat = getInputFormatForRun(context, collector);
+    ValidatingInputFormat validatingInputFormat = getInputFormatForRun(context);
 
     FormatContext formatContext = new FormatContext(collector, null);
     Schema schema = context.getOutputSchema() == null ?
@@ -276,8 +276,8 @@ public abstract class AbstractFileSource<T extends PluginConfig & FileSourceProp
     return null;
   }
 
-  protected ValidatingInputFormat getInputFormatForRun(BatchSourceContext context,
-      FailureCollector collector) {
+  protected ValidatingInputFormat getInputFormatForRun(BatchSourceContext context) {
+    FailureCollector collector = context.getFailureCollector();
     String fileFormat = config.getFormatName();
     try {
       return context.newPluginInstance(fileFormat);
