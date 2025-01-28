@@ -14,7 +14,7 @@
  * the License.
  */
 
-package io.cdap.plugin.db.common;
+package io.cdap.plugin.common.db;
 
 import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
