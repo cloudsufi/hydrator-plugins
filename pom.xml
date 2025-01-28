@@ -28,7 +28,6 @@
 
   <modules>
     <module>hydrator-common</module>
-    <module>amazon-s3-plugins</module>
     <module>core-plugins</module>
 <!-- TODO   <module>cassandra-plugins</module> TO EVALUATE https://cdap.atlassian.net/browse/CDAP-21051 -->
     <module>database-plugins</module>
