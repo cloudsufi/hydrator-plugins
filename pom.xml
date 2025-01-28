@@ -29,8 +29,6 @@
   <modules>
     <module>hydrator-common</module>
     <module>amazon-s3-plugins</module>
-    <module>azure</module>
-    <module>condition-plugins</module>
     <module>core-plugins</module>
 <!-- TODO   <module>cassandra-plugins</module> TO EVALUATE https://cdap.atlassian.net/browse/CDAP-21051 -->
     <module>database-plugins</module>
@@ -44,14 +42,11 @@
     <module>format-text</module>
     <module>format-xls</module>
 <!--    <module>hbase-plugins</module> TO EVALUATE https://cdap.atlassian.net/browse/CDAP-21052 -->
-    <module>google-cloud</module>
-    <module>kafka-plugins</module>
     <module>http-plugins</module>
     <module>mongodb-plugins</module>
     <module>solrsearch-plugins</module>
     <module>spark-plugins</module>
     <module>transform-plugins</module>
-    <module>wrangler-transform</module>
   </modules>
 
   <licenses>
