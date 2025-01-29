@@ -180,7 +180,9 @@ public class DBErrorDetailsProvider implements ErrorDetailsProvider {
   }
 
   private ProgramFailureException getProgramFailureException(SQLException e, ErrorContext errorContext) {
-    String errorMessage = e.getMessage();
+    String errorMessage =
+      String.format("SQL Exception occurred: [Message='%s', SQLState='%s', ErrorCode='%s'].", e.getMessage(),
+        e.getSQLState(), e.getErrorCode());
     String sqlState = e.getSQLState();
     int errorCode = e.getErrorCode();
     String errorMessageWithDetails =
