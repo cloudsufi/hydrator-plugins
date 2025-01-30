@@ -198,7 +198,7 @@ public class ExcelInputFormat extends TextInputFormat {
       } catch (Exception e) {
         String error = String.format("Exception while reading excel sheet: %s", e.getMessage());
         throw ErrorUtils.getProgramFailureException(new ErrorCategory(ErrorCategory.ErrorCategoryEnum.PLUGIN),
-                error, error, ErrorType.USER, false, null);
+                error, error, ErrorType.USER, false, e);
       }
 
       // As we cannot get the number of rows in a sheet while streaming.
