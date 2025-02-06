@@ -66,10 +66,6 @@ public class ExcelErrorDetailsProvider implements ErrorDetailsProvider {
                 return getProgramFailureException((IllegalArgumentException) t, errorContext,
                         ErrorType.USER);
             }
-            if (t instanceof IOException) {
-                return getProgramFailureException((IOException) t, errorContext,
-                        ErrorType.USER);
-            }
         }
         return null;
     }
