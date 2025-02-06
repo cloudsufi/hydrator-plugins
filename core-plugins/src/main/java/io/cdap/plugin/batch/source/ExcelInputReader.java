@@ -453,8 +453,10 @@ public class ExcelInputReader extends BatchSource<LongWritable, Object, Structur
           }
         }
       } catch (Exception e) {
-        throw new IllegalArgumentException("Exception while creating output schema for Excel input reader. " +
-                                             "Invalid output " + "schema: " + e.getMessage(), e);
+        String error = String.format("Exception while creating output schema for Excel input reader. " +
+                        "Invalid output " + "schema: %s", e.getMessage());
+        throw ErrorUtils.getProgramFailureException(new ErrorCategory(ErrorCategory.ErrorCategoryEnum.PLUGIN),
+                error, error, ErrorType.USER, false, e);
       }
       outputSchema = Schema.recordOf("outputSchema", outputFields);
     }

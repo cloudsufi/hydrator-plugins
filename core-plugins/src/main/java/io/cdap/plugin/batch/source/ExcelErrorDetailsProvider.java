@@ -16,11 +16,76 @@
 
 package io.cdap.plugin.batch.source;
 
-import io.cdap.plugin.common.HydratorErrorDetailsProvider;
+import com.github.pjfanning.xlsx.exceptions.MissingSheetException;
+import com.github.pjfanning.xlsx.exceptions.ReadException;
+import com.google.common.base.Throwables;
+
+import io.cdap.cdap.api.exception.ErrorCategory;
+import io.cdap.cdap.api.exception.ErrorType;
+import io.cdap.cdap.api.exception.ErrorUtils;
+import io.cdap.cdap.api.exception.ProgramFailureException;
+import io.cdap.cdap.etl.api.exception.ErrorContext;
+import io.cdap.cdap.etl.api.exception.ErrorDetailsProvider;
+
+import org.apache.poi.EmptyFileException;
+
+import java.io.IOException;
+import java.util.List;
+
+import javax.annotation.Nullable;
 
 /**
  * ExcelErrorDetailsProvider provider
  */
-public class ExcelErrorDetailsProvider extends HydratorErrorDetailsProvider {
-  
+public class ExcelErrorDetailsProvider implements ErrorDetailsProvider {
+
+    private static final String ERROR_MESSAGE_FORMAT = "Error occurred in the phase: '%s'. Error message: %s";
+
+    @Nullable
+    @Override
+    public ProgramFailureException getExceptionDetails(Exception e, ErrorContext errorContext) {
+        List<Throwable> causalChain = Throwables.getCausalChain(e);
+        for (Throwable t : causalChain) {
+            if (t instanceof ProgramFailureException) {
+                // if causal chain already has program failure exception, return null to avoid double wrap.
+                return null;
+            }
+            if (t instanceof MissingSheetException) {
+                return getProgramFailureException((MissingSheetException) t, errorContext,
+                        ErrorType.USER);
+            }
+            if (t instanceof ReadException) {
+                return getProgramFailureException((ReadException) t, errorContext,
+                        ErrorType.USER);
+            }
+            if (t instanceof EmptyFileException) {
+                return getProgramFailureException((EmptyFileException) t, errorContext,
+                        ErrorType.USER);
+            }
+            if (t instanceof IllegalArgumentException) {
+                return getProgramFailureException((IllegalArgumentException) t, errorContext,
+                        ErrorType.USER);
+            }
+            if (t instanceof IOException) {
+                return getProgramFailureException((IOException) t, errorContext,
+                        ErrorType.USER);
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Get a ProgramFailureException with the given error information from {@link Exception}.
+     *
+     * @param exception The Exception to get the error information from.
+     * @return A ProgramFailureException with the given error information.
+     */
+    private ProgramFailureException getProgramFailureException(Exception exception,
+                                                               ErrorContext errorContext, ErrorType errorType) {
+        String errorMessage = exception.getMessage();
+        return ErrorUtils.getProgramFailureException(
+                new ErrorCategory(ErrorCategory.ErrorCategoryEnum.PLUGIN), errorMessage,
+                String.format(ERROR_MESSAGE_FORMAT, errorContext.getPhase(), errorMessage), errorType,
+                false, exception);
+    }
 }
