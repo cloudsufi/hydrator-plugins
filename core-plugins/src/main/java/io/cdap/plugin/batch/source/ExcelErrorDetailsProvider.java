@@ -19,20 +19,16 @@ package io.cdap.plugin.batch.source;
 import com.github.pjfanning.xlsx.exceptions.MissingSheetException;
 import com.github.pjfanning.xlsx.exceptions.ReadException;
 import com.google.common.base.Throwables;
-
 import io.cdap.cdap.api.exception.ErrorCategory;
 import io.cdap.cdap.api.exception.ErrorType;
 import io.cdap.cdap.api.exception.ErrorUtils;
 import io.cdap.cdap.api.exception.ProgramFailureException;
 import io.cdap.cdap.etl.api.exception.ErrorContext;
 import io.cdap.cdap.etl.api.exception.ErrorDetailsProvider;
-
 import org.apache.poi.EmptyFileException;
 
-import java.io.IOException;
-import java.util.List;
-
 import javax.annotation.Nullable;
+import java.util.List;
 
 /**
  * ExcelErrorDetailsProvider provider
@@ -40,6 +36,9 @@ import javax.annotation.Nullable;
 public class ExcelErrorDetailsProvider implements ErrorDetailsProvider {
 
     private static final String ERROR_MESSAGE_FORMAT = "Error occurred in the phase: '%s'. Error message: %s";
+    private static final String SUBCATEGORY_CONFIGURATION = "Configuration";
+    private static final String SUBCATEGORY_DATA_MISSING = "Data Missing";
+    private static final String SUBCATEGORY_FILE_READ_ERROR = "File Read Error";
 
     @Nullable
     @Override
@@ -52,19 +51,19 @@ public class ExcelErrorDetailsProvider implements ErrorDetailsProvider {
             }
             if (t instanceof MissingSheetException) {
                 return getProgramFailureException((MissingSheetException) t, errorContext,
-                        ErrorType.USER);
+                        ErrorType.USER, SUBCATEGORY_DATA_MISSING);
             }
             if (t instanceof ReadException) {
                 return getProgramFailureException((ReadException) t, errorContext,
-                        ErrorType.USER);
+                        ErrorType.USER, SUBCATEGORY_FILE_READ_ERROR);
             }
             if (t instanceof EmptyFileException) {
                 return getProgramFailureException((EmptyFileException) t, errorContext,
-                        ErrorType.USER);
+                        ErrorType.USER, SUBCATEGORY_DATA_MISSING);
             }
             if (t instanceof IllegalArgumentException) {
                 return getProgramFailureException((IllegalArgumentException) t, errorContext,
-                        ErrorType.USER);
+                        ErrorType.USER, SUBCATEGORY_CONFIGURATION);
             }
         }
         return null;
@@ -76,11 +75,11 @@ public class ExcelErrorDetailsProvider implements ErrorDetailsProvider {
      * @param exception The Exception to get the error information from.
      * @return A ProgramFailureException with the given error information.
      */
-    private ProgramFailureException getProgramFailureException(Exception exception,
-                                                               ErrorContext errorContext, ErrorType errorType) {
+    private ProgramFailureException getProgramFailureException(Exception exception, ErrorContext errorContext,
+                                                               ErrorType errorType, String subCategory) {
         String errorMessage = exception.getMessage();
         return ErrorUtils.getProgramFailureException(
-                new ErrorCategory(ErrorCategory.ErrorCategoryEnum.PLUGIN), errorMessage,
+                new ErrorCategory(ErrorCategory.ErrorCategoryEnum.PLUGIN, subCategory), errorMessage,
                 String.format(ERROR_MESSAGE_FORMAT, errorContext.getPhase(), errorMessage), errorType,
                 false, exception);
     }
